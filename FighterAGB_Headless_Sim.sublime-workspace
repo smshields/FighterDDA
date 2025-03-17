@@ -1,0 +1,337 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "fighterAGB_headless_sim.js",
+			"settings":
+			{
+				"buffer_size": 43221,
+				"line_ending": "Windows"
+			},
+			"undo_stack":
+			[
+			]
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"Package Control: insta",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/C/Users/samue/OneDrive/Desktop/fighterAGB_design_doc.txt",
+		"/C/Users/samue/OneDrive/Desktop/simulation_log_1741831124061.json",
+		"/C/Users/samue/OneDrive/Desktop/simulation_log_1741832116942.json",
+		"/C/Users/samue/OneDrive/Desktop/simulation_log_1741833540357.json",
+		"/C/Users/samue/OneDrive/Desktop/simulation_log_1741833605175.json",
+		"/C/Users/samue/OneDrive/Documents/ToG/Structured_One_Shot_Prompt.txt",
+		"/C/Users/samue/OneDrive/Documents/ToG/Unstructured_Multi_Shot_Prompt.txt",
+		"/C/Users/samue/OneDrive/Documents/ToG/Unstructured_Zero_Shot_Prompt.txt",
+		"/C/Users/samue/OneDrive/Documents/ToG/Output_Format.txt",
+		"/C/Users/samue/AppData/Roaming/Sublime Text/Packages/User/JavaScript.sublime-build",
+		"/C/Users/samue/OneDrive/Desktop/simulation_log_1741828944346.json",
+		"/C/Users/samue/OneDrive/Documents/GitHub/BalanceTaxonomy/color_mapping.json",
+		"/C/Users/samue/OneDrive/Documents/GitHub/BalanceTaxonomy/sankey_data.csv",
+		"/C/Users/samue/OneDrive/Documents/GitHub/BalanceTaxonomy/sankey_data.json",
+		"/C/Users/samue/OneDrive/Documents/GitHub/BalanceTaxonomy/convert_sankey_data.py",
+		"/C/Users/samue/OneDrive/Documents/GitHub/BalanceTaxonomy/balance_sankey.py",
+		"/C/Users/samue/OneDrive/Documents/GitHub/BalanceTaxonomy/balance_taxonomy_data.json",
+		"/C/Users/samue/OneDrive/Documents/ToG/Structured_One_Shot_Output.txt",
+		"/C/Users/samue/OneDrive/Documents/ToG/Unstructured_Multi_Shot_Output.txt",
+		"/C/Users/samue/OneDrive/Documents/ToG/Unstructured_Zero_Shot_Output.txt",
+		"/C/Users/samue/OneDrive/Documents/ToG/Academical_2.0_Output.txt",
+		"/C/Users/samue/OneDrive/Documents/ToG/Academical_2.0_Prompt.txt",
+		"/C/Users/samue/OneDrive/Documents/GitHub/TermCountUtility/terms.txt",
+		"/C/Users/samue/OneDrive/Documents/GitHub/TermCountUtility/CountTermFrequency.py",
+		"/C/Users/samue/OneDrive/Desktop/IntoTheBlue",
+		"/C/Users/samue/OneDrive/Documents/ToG/Human_Authored_Tree.txt",
+		"/C/Users/samue/OneDrive/Documents/GitHub/LLMInteractiveNarrative/SemanticCorrectRunningAvg"
+	],
+	"find":
+	{
+		"height": 45.0
+	},
+	"find_in_files":
+	{
+		"height": 619.0,
+		"where_history":
+		[
+			"<current file>",
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			";\n",
+			"heal",
+			"\"queueLength\":",
+			"24",
+			"multi",
+			"ff7f0e",
+			"]",
+			"[",
+			"relationship_threshold:",
+			"relationship_stat_current:",
+			"relationship_symbol:",
+			"relationship_stat_change:",
+			"relationship_stat_current:",
+			"relationship_stat:",
+			"character2:",
+			"character1:",
+			"attribute_change:",
+			"attribute:",
+			"character:",
+			"relationship_symbol",
+			"relationship_stat_change",
+			"relationship_stat_change:",
+			"relationship_stat_current:",
+			"relationship_threshold:",
+			"relationship_stat_current:",
+			"relationship_symbol:",
+			"relationship_stat:",
+			"character2:",
+			"character1:",
+			"attribute_change:",
+			"attribute:",
+			"character:",
+			"id:",
+			"\"stat_changes\" {",
+			"preconditions:",
+			"next_id:",
+			"choice_content:",
+			"choices:",
+			"attributes:",
+			"relationships:",
+			"stat_changes {",
+			"stat_changes:",
+			"dialogue:",
+			"dialogue_summary:",
+			"player_character:",
+			"speaking_character:",
+			"prev_id:",
+			"\"prev_id\"",
+			"22"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"],",
+			"",
+			"\"relationship_threshold\":",
+			"\"relationship_stat_current\":",
+			"\"relationship_symbol\":",
+			"\"relationship_stat_change\":",
+			"\"relationship_stat_current\":",
+			"\"relationship_stat\":",
+			"\"character2\":",
+			"\"character1\":",
+			"\"attribute_change\":",
+			"\"attribute\":",
+			"\"character\":",
+			"\"relationship_stat_change\":",
+			"\"relationship_threshold\":",
+			"\"relationship_stat_current\":",
+			"\"relationship_symbol\":",
+			"\"relationship_stat\":",
+			"\"character2\":",
+			"\"character1\":",
+			"\"attribute_change\":",
+			"\"attribute\":",
+			"\"character\":",
+			"\"id\":",
+			"\"stat_changes\": {",
+			"\"preconditions\":",
+			"\"next_id\":",
+			"\"choice_content\":",
+			"\"choices\":",
+			"\"attributes\":",
+			"\"relationships\":",
+			"\"stat_changes\" {",
+			"\"stat_changes\":",
+			"\"dialogue\":",
+			"\"dialogue_summary\":",
+			"\"player_character\":",
+			"\"speaking_character\":",
+			"\"prev_id\":"
+		],
+		"reverse": false,
+		"scrollbar_highlights": true,
+		"show_context": true,
+		"use_buffer2": true,
+		"use_gitignore": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "fighterAGB_headless_sim.js",
+					"selected": true,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 43221,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								713,
+								713
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"stack_multiselect": false,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 45.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 545.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.nodejs":
+	{
+		"height": 132.0
+	},
+	"pinned_build_system": "Packages/User/JavaScript.sublime-build",
+	"project": "FighterAGB_Headless_Sim.sublime-project",
+	"replace":
+	{
+		"height": 86.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
