@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "simple-statistics": "^7.8.8"
+  },
+  "devDependencies": {
+    "eslint": "^9.22.0"
   }
 }
