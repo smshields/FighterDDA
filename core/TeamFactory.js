@@ -10,7 +10,7 @@ class TeamFactory {
   createTeam(playerNumber) {
     return {
       characters: [
-        new Character(playerNumber, "warrior", {
+        new Character(playerNumber, Constants.WARRIOR_NAME, {
           HP: Constants.WARRIOR_HP_BASE,
           Attack: Constants.WARRIOR_ATTACK_BASE,
           Defense: Constants.WARRIOR_DEFENSE_BASE,
@@ -28,10 +28,10 @@ class TeamFactory {
           multiTarget: true
         }, {
           type: 'defend',
-          scalar: 0,
+          scalar: Constants.DEFENSE_SCALAR,
           multiTarget: false
         }]),
-        new Character(playerNumber, "mage", {
+        new Character(playerNumber, Constants.MAGE_NAME, {
           HP: Constants.MAGE_HP_BASE,
           Attack: Constants.MAGE_ATTACK_BASE,
           Defense: Constants.MAGE_DEFENSE_BASE,
@@ -49,10 +49,10 @@ class TeamFactory {
           multiTarget: true
         }, {
           type: 'defend',
-          scalar: 0,
+          scalar: Constants.DEFENSE_SCALAR,
           multiTarget: false
         }]),
-        new Character(playerNumber, "priest", {
+        new Character(playerNumber, Constants.PRIEST_NAME, {
           HP: Constants.PRIEST_HP_BASE,
           Attack: Constants.PRIEST_ATTACK_BASE,
           Defense: Constants.PRIEST_DEFENSE_BASE,
@@ -78,10 +78,10 @@ class TeamFactory {
           multiTarget: false
         }, {
           type: 'defend',
-          scalar: 0,
+          scalar: Constants.DEFENSE_SCALAR,
           multiTarget: false
         }]),
-        new Character(playerNumber, "rogue", {
+        new Character(playerNumber, Constants.ROGUE_NAME, {
           HP: Constants.ROGUE_HP_BASE,
           Attack: Constants.ROGUE_ATTACK_BASE,
           Defense: Constants.ROGUE_DEFENSE_BASE,
@@ -90,16 +90,20 @@ class TeamFactory {
           Speed: Constants.ROGUE_SPEED_BASE,
           Luck: Constants.ROGUE_LUCK_BASE
         }, [{
-          type: 'attack',
-          scalar: Constants.SINGLE_TARGET_SCALAR,
-          multiTarget: false
+          type: 'multi_heal',
+          scalar: Constants.MULTI_HEAL_SCALAR,
+          multiTarget: true
+        }, {
+          type: 'multi_magic_attack',
+          scalar: Constants.MULTI_TARGET_SCALAR,
+          multiTarget: true
         }, {
           type: 'multi_attack',
           scalar: Constants.MULTI_TARGET_SCALAR,
           multiTarget: true
         }, {
           type: 'defend',
-          scalar: 0,
+          scalar: Constants.DEFENSE_SCALAR,
           multiTarget: false
         }])
       ]

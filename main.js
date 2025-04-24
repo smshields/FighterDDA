@@ -11,7 +11,7 @@ const TeamFactory = require('./core/TeamFactory');
 
 
 // New function to run repeated simulations
-const runRepeatedSimulations = (numSimulations = 1, aiDirector = new AIDirector(), seed = 1234, directorActionInterval = 20, actionExecutionInterval = 3) => {
+const runRepeatedSimulations = (numSimulations = 1, aiDirector = new AIDirector('difficulty'), seed = 1234, directorActionInterval = 3, actionExecutionInterval = 3) => {
     let player1Wins = 0;
     let player2Wins = 0;
     let totalTimeSteps = 0;
@@ -24,17 +24,17 @@ const runRepeatedSimulations = (numSimulations = 1, aiDirector = new AIDirector(
     for (let i = 0; i < numSimulations; i++) {
         // Create subdirectory for each simulation
         const simulationDirectory = path.join(mainDirectory, `simulation_${i + 1}`);
-        fs.mkdirSync(simulationDirectory);
+        //fs.mkdirSync(simulationDirectory);
 
         // Create players with AIPlayer methods
-        const team1 = new AIPlayer(1, createTeam(1).characters, 'optimal', 0.3);
-        const team2 = new AIPlayer(2, createTeam(2).characters, 'optimal', 0.3);
+        const team1 = new AIPlayer(1, teamFactory.createTeam(1).characters, 'optimal', 0.3);
+        const team2 = new AIPlayer(2, teamFactory.createTeam(2).characters, 'optimal', 0.3);
 
         team1.characters.forEach(character => character.player = team1);
         team2.characters.forEach(character => character.player = team2);
 
-        const game = new Game([team1, team2], aiDirector, seed + i, directorActionInterval, actionExecutionInterval);
-        game.logDirectory = simulationDirectory; // Set the log directory
+        const game = new Game([team1, team2], aiDirector, directorActionInterval, actionExecutionInterval);
+        //game.logDirectory = simulationDirectory; // Set the log directory
         game.runSimulation();
         console.log("Simulation Number: " + (i+1))
 
@@ -70,13 +70,14 @@ const team2 = teamFactory.createTeam(2);
 const agent1 = new AIPlayer(1, team1.characters, 'optimal', 0.3);
 const agent2 = new AIPlayer(2, team2.characters, 'optimal', 0.3);
 
+//TODO: Fix circular reference...
 agent1.characters.forEach(character => character.player = agent1);
 agent2.characters.forEach(character => character.player = agent2);
 
 // // For a simulation *with* the AI director, pass in `new AIDirector()`
 // // For a simulation *without* the AI director, pass in `null`
-const game = new Game([agent1, agent2], new AIDirector('difficulty'), 20, 3);
-game.runSimulation();
+//const game = new Game([agent1, agent2], new AIDirector('difficulty'), Constants.DIRECTOR_ACTION_INTERVAL, Constants.ACTION_EXECUTION_INTERVAL);
+//game.runSimulation();
 
 // Run repeated simulations
-// runRepeatedSimulations(1000, new AIDirector('difficulty'), 1234, 20, 3);
+runRepeatedSimulations(100, new AIDirector('difficulty'), 1234, 20, 3);

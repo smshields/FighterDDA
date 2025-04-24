@@ -1,8 +1,9 @@
 const Utils = require('../utils/Utils');
 const RNG = require('../utils/RNG');
+const Constants = require('../utils/Constants');
 
 class AIPlayer {
-    constructor(playerNumber, characters, mode = 'optimal', lowHealthThreshold = 0.3) {
+    constructor(playerNumber, characters, mode = Constants.DEFAULT_PLAYER_AI, lowHealthThreshold = Constants.LOW_HEALTH_THRESHOLD) {
         this.playerNumber = playerNumber;
         this.characters = characters;
         this.lowHealthThreshold = lowHealthThreshold; // 30% HP or less is considered low health

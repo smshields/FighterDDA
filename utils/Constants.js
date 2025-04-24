@@ -1,22 +1,57 @@
+//TODO: Move logging messages here.
+
 class Constants {
 
-    static RNG_SEED = 210583;
+    static RNG_SEED = Math.random(); //Seed for reproduction
 
-    static MULTI_TARGET_SCALAR = 0.1; //Scales multi-target damage
-    static SINGLE_TARGET_SCALAR = 0.4; //Scales single-target damage
-    static HEAL_SCALAR = 0.2; //scales healing 
-    static MULTI_HEAL_SCALAR = 0.05; //scales multi-target healing
+    static CONSOLE_LOGGING_ENABLED = true; //Are we logging to console
+    static JSON_LOGGING_ENABLED = true; //Are we logging to JSON
+    static HALT_ON_ERROR = false;
+
+    static BALANCE_MODE = 'difficulty'; //determines type of balancing - inclusion/difficulty
+    
+
+    static DEFAULT_PLAYER_AI = 'optimal'; //determines AI of player if not specified
+    static PLAYER_1_AI = 'optimal'; //determines AI type of player 1 - optimal, random, suboptimal
+    static PLAYER_2_AI = 'optimal'; //determines AI type of player 2 - optimal, random, suboptimal
+
+    static MULTI_TARGET_SCALAR = 0.25; //Scales multi-target damage
+    static SINGLE_TARGET_SCALAR = 1; //Scales single-target damage
+    static HEAL_SCALAR = 0.1; //scales healing 
+    static MULTI_HEAL_SCALAR = 0.025; //scales multi-target healing
     static SPEED_SCALAR = 0.1; //scales how fast speed adds to action meter
     static DEFENSE_SCALAR = 1.25; //determines how much defend boosts defense
 
+    //TODO: We should dynamically calculate this based off of min attack/defense
+    static MAX_POSSIBLE_RAW_DAMAGE = 90;
+    static MIN_POSSIBLE_RAW_DAMAGE = -90;
+
+    //TODO: We should dynamically calculate this based off of defense averages
+    static MAX_POSSIBLE_RAW_HEAL = 100;
+    static MIN_POSSIBLE_RAW_HEAL = 10;
+
+    //TODO: We can use these to dynamicall calculate other values.
+    static MAX_HP = 100;
+    static MIN_HP = 0;
+
+    //TODO: Ensure that this is executing actions queued on the same step on the same step
+    static ACTION_EXECUTION_INTERVAL = 3; //determines how many timesteps to wait before executing an action
+
+    //TODO: Make this dynamic based on magnitude of balancing needed
+    static DIRECTOR_ACTION_INTERVAL = 90; //Number of timeSteps between each director action
     static MAX_BUFF_AMOUNT = 30; //clamps maximum buff
     static MAX_NERF_AMOUNT = 30; //clamps minimum buff
 
-    static DIFFICULTY_ADJUSTMENT_SCALAR = 0.001; //scales difficulty scalar against balance direction/magnitude
-
+    static DIFFICULTY_ADJUSTMENT_SCALAR = 0.01; //scales difficulty scalar against balance direction/magnitude
+    static TARGET_ACTIONS = 60; //determines the target amount of actions for difficulty
+    
     static STAT_FUZZINESS = 20; //scales how much to add/subtract during chracter stat initialization
 
+    static LOW_HEALTH_THRESHOLD = 0.3;
+
     //Sets base, min, max stats of all character types
+    static WARRIOR_NAME = 'warrior';
+
     static WARRIOR_HP_MIN = 50;
     static WARRIOR_HP_MAX = 100;
     static WARRIOR_HP_BASE = 80;
@@ -35,7 +70,7 @@ class Constants {
 
     static WARRIOR_MAGIC_DEFENSE_MIN = 10;
     static WARRIOR_MAGIC_DEFENSE_MAX = 50;
-    static WARRIOR_BASE = 20;
+    static WARRIOR_MAGIC_DEFENSE_BASE = 20;
 
     static WARRIOR_SPEED_MIN = 20;
     static WARRIOR_SPEED_MAX = 80;
@@ -44,6 +79,8 @@ class Constants {
     static WARRIOR_LUCK_MIN = 10;
     static WARRIOR_LUCK_MAX = 60;
     static WARRIOR_LUCK_BASE = 30;
+
+    static MAGE_NAME = 'mage';
 
     static MAGE_HP_MIN = 50;
     static MAGE_HP_MAX = 100;
@@ -73,6 +110,8 @@ class Constants {
     static MAGE_LUCK_MAX = 60;
     static MAGE_LUCK_BASE = 30;
 
+    static PRIEST_NAME = 'priest';
+
     static PRIEST_HP_MIN = 20;
     static PRIEST_HP_MAX = 80;
     static PRIEST_HP_BASE = 50;
@@ -100,6 +139,8 @@ class Constants {
     static PRIEST_LUCK_MIN = 10;
     static PRIEST_LUCK_MAX = 30;
     static PRIEST_LUCK_BASE = 60;
+
+    static ROGUE_NAME = 'rogue';
 
     static ROGUE_HP_MIN = 20;
     static ROGUE_HP_MAX = 50;

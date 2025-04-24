@@ -17,6 +17,18 @@ class RNG {
         this.state = (a * this.state + c) % m;
         return this.state / m;
     }
+
+    static next10Power(power) {
+        return (Math.pow(10, power)) * this.next();
+    }
+
+    static positiveNegativeRandom(){
+        if(this.next() > .5){
+            return 1;
+        } else {
+            return -1;
+        }
+    }
 }
 
 module.exports = RNG;
