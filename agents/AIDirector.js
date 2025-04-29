@@ -32,6 +32,8 @@ class AIDirector {
         return Math.floor(RNG.next() * this.maxNerfAmount);
     }
 
+
+    //TODO: Return an array of actions, not just one
     balanceGame(players) {
         let balanceMessage = `AI Director is balancing. `;
 
@@ -49,63 +51,192 @@ class AIDirector {
             if (this.gameState.actionCurrHPData.length >= 2) {
                 //return to this if we still are having major problems... see case if x is negative)
                 if (this.gameState.totalPlayerActions >= this.targetActions) {
-                   this.targetActions = this.gameState.totalPlayerActions+1;
+                    console.log("reached target action increment **************");
+                    console.log(this.targetActions);
+                    console.log(this.gameState.totalPlayerActions);
+                    this.targetActions = this.gameState.totalPlayerActions + 5;
                 }
 
-                //TODO: Points should be measured between Director actions, not player actions. Or be settings dependent. requires tinkering with gameState.actionCurrHPData
+                //TODO: Refactor this into methods to reduce length of code in method.
+                //Get LoB for Player 1, current average sum
+                let p1LineOfBestFitData = [];
+                let p1CurrentAvgSum = 0;
 
-
-                //Calculate current trend line based on prior currentHP vs. Action Count Points
-                const regression = ss.linearRegression(this.gameState.actionCurrHPData);
-                const currentSlope = regression.m;
-                const currentYIntercept = regression.b;
-                const currentX1 = this.gameState.totalPlayerActions;
-                const currentY1 = (currentSlope * currentX1) + currentYIntercept;
-                const newCurrentX = this.gameState.totalPlayerActions + 1; //new projected X is the next action executed
-                const newCurrentY = (currentSlope * newCurrentX) + currentYIntercept; //calculate new Y from previous values
-
-                //Calculate current target line based on y=0 intercept, remaining actions, and current hp/action
-                const targetX1 = this.gameState.totalPlayerActions;
-                const targetY1 = this.gameState.currentHP;
-                const targetX2 = this.targetActions;
-                const targetY2 = 0; //game should end at targetActions
-
-                const targetSlope = Utils.safeDivide((targetX2 - targetX1), (targetY2 - targetY1)); //get slope of target line
-                const targetYIntercept = -1 * (targetSlope * targetX2); //use target point (x is target actions, y is 0) to get slope
-                const newTargetX = this.gameState.totalPlayerActions + 1; //new projected X is the next action executed
-                const newTargetY = (targetSlope * newTargetX) + targetYIntercept;
-
-                //Approximate new Y value based on next X value using new Y points, gives the desired change of HP we want to see
-                const yChange = newTargetY - newCurrentY;
-                let currentAvgYSum = 0;
-                for (let point of this.gameState.actionCurrHPData) {
-                    currentAvgYSum += point[1];
+                let p1TempData = this.gameState.actionCurrHPData.slice(-10);
+                for (let point of p1TempData) {
+                    p1CurrentAvgSum += point[1];
+                    p1LineOfBestFitData.push([point[0], point[1]]);
                 }
-                currentAvgYSum = currentAvgYSum / this.gameState.actionCurrHPData.length;
 
-                const desiredY = currentAvgYSum + yChange;
-                //HP Change we want to see for each action going forward
-                const desiredYChange = desiredY - newCurrentY; //negative = buff to make faster, positive = nerf to make slower
+                p1CurrentAvgSum = p1CurrentAvgSum / p1LineOfBestFitData.length;
 
-                const balanceMagnitude = desiredYChange; //indicates the change in HP we'd need to see to hit new Y point
+                let p1LineOfBestFit = ss.linearRegression(p1LineOfBestFitData);
+                let p1LineOfBestFitSlope = p1LineOfBestFit.m;
+                let p1LineOfBestFitYIntercept = p1LineOfBestFit.b;
 
-                const isBuff = (balanceMagnitude < 0);
+                //Get Target line for Player 1
+                let p1TargetX1 = 0;
+                let p1TargetY1 = this.gameState.player1Data.currentHP;
+                let p1TargetX2 = this.targetActions - this.gameState.totalPlayerActions;
+                let p1TargetY2 = 0;
+
+                let p1TargetSlope = Utils.safeDivide((p1TargetY2 - p1TargetY1), (p1TargetX2 - p1TargetX1));
+                let p1TargetYIntercept = p1TargetY1;
+
+                //Get next point on line for LoB, Target for Player 1
+                let p1LineOfBestFitNextX = this.gameState.totalPlayerActions + 1;
+                let p1LineOfBestFitNextY = (p1LineOfBestFitSlope * p1LineOfBestFitNextX) + p1LineOfBestFitYIntercept;
+                let p1LineOfBestFitY = (p1LineOfBestFitSlope * this.gameState.totalPlayerActions) + p1LineOfBestFitYIntercept;
+
+                let p1TargetNextX = this.gameState.totalPlayerActions + 1;
+                let p1TargetNextY = p1TargetSlope + p1TargetY1;
+
+                //predict where next Y needs to be based on both points
+                let p1YChange = p1TargetNextY - p1LineOfBestFitNextY;
+                let p1DesiredY = p1CurrentAvgSum + p1YChange;
+                let p1DesiredYChange = p1DesiredY - p1LineOfBestFitNextY;
+
+                let p1BalanceMagnitude = p1DesiredYChange;
+
+
+
+                //Get LoB for Player 2, current average sum
+                let p2LineOfBestFitData = [];
+                let p2CurrentAvgSum = 0;
+
+                let p2TempData = this.gameState.actionCurrHPData.slice(-10);
+                for (let point of p2TempData) {
+                    p2CurrentAvgSum += point[2];
+                    p2LineOfBestFitData.push([point[0], point[2]]);
+                }
+
+                p2CurrentAvgSum = p2CurrentAvgSum / p2LineOfBestFitData.length;
+
+                let p2LineOfBestFit = ss.linearRegression(p2LineOfBestFitData);
+                let p2LineOfBestFitSlope = p2LineOfBestFit.m;
+                let p2LineOfBestFitYIntercept = p2LineOfBestFit.b;
+
+                //Get Target line for Player 1
+                let p2TargetX1 = 0;
+                let p2TargetY1 = this.gameState.player2Data.currentHP;
+                let p2TargetX2 = this.targetActions - this.gameState.totalPlayerActions;
+                let p2TargetY2 = 0;
+
+                let p2TargetSlope = Utils.safeDivide((p2TargetY2 - p2TargetY1), (p2TargetX2 - p2TargetX1));
+                let p2TargetYIntercept = p2TargetY1;
+                let p2LineOfBestFitY = (p2LineOfBestFitSlope * this.gameState.totalPlayerActions) + p2LineOfBestFitYIntercept;
+
+                //Get next point on line for LoB, Target for Player 1
+                let p2LineOfBestFitNextX = this.gameState.totalPlayerActions + 1;
+                let p2LineOfBestFitNextY = (p2LineOfBestFitSlope * p2LineOfBestFitNextX) + p2LineOfBestFitYIntercept;
+
+                let p2TargetNextX = 1;
+                let p2TargetNextY = p2TargetSlope + p2TargetYIntercept;
+
+                //predict where next Y needs to be based on both points
+                let p2YChange = p2TargetNextY - p2LineOfBestFitNextY;
+                let p2DesiredY = p2CurrentAvgSum + p2YChange;
+                let p2DesiredYChange = p2DesiredY - p2LineOfBestFitNextY;
+
+                let p2BalanceMagnitude = p2DesiredYChange;
+
+                //if balance magnitude is negative - nerf player (lower their defense, raise opponents offense).
+                //if balance magnitude is positive - buff player (raise their defense, lower opponents offense).
+
+                //balance magnitude is representing damage per action needed to change from current line of best fit prediction
+                //since we are applying two balancing actions (one per player), we can safely divide magnitude in half
+                //need to convert DPA to relevant stat changes for damage balancing
+
+                //After doing some paper math, this is: change = desiredDPA - currentDPA
+                //Which is: change = desiredY - lineOfBestFitNextY
+
+                let p1StatChangeMagnitude = this.calculateRawStatChange(p1LineOfBestFitNextY, p1DesiredY);
+                let p2StatChangeMagnitude = this.calculateRawStatChange(p2LineOfBestFitNextY, p2DesiredY);
 
                 let randomNumber = RNG.next();
-                let cumulativeValue = randomNumber;
+                let cumulativeValue = .5;
 
-                //we need to consider heals and damage per action to translate to final HP change
+                //TODO: Fix this up to be cleaner, allow more adjustments
+                //TODO: Do I need to divide stat change magnitudes in half since I'm making two adjustments? 
+                //TODO: Update other Game functions so that it is expecting an array of balancing actions
 
-                //calculate current DPA derived from stats. Always positive as DPA can never be negative (always mapped to a positive range)
-                let currentAvgDPA = this.calculateAverageDamagePerAction(player1, player2);
-                //get desired DPA we'd need to have to meet our balance magnitude change;
-                //calculate current DPA derived from ratios of hp changes to current average DPA
-                let desiredAvgDPA = desiredYChange; //can only be negative
-                //get average stat change weed need per living character to get desired DPA
-                let statChangeMagnitude = this.calculateRawStatChange(currentAvgDPA, desiredAvgDPA);
+
+                let directorActions = [];
+
+                //P1 decide: buff defense or nerf P2 Attack; nerf defense or buff P2 Attack;
+                let directorActionP1 = {};
+
+                if (randomNumber < cumulativeValue) {
+                    directorActionP1 = this.adjustAttack(player2, -1 * p1StatChangeMagnitude);
+                } else {
+                    directorActionP1 = this.adjustDefense(player1, p1StatChangeMagnitude);
+                }
+
+                directorActions.push(directorActionP1);
+
+                //P2 decide
+                randomNumber = RNG.next();
+
+                let directorActionP2 = {};
+                if (randomNumber < cumulativeValue) {
+                    directorActionP2 = this.adjustAttack(player1, -1 * p2StatChangeMagnitude);
+                } else {
+                    directorActionP2 = this.adjustDefense(player2, p2StatChangeMagnitude);
+                }
+
+                directorActions.push(directorActionP2);
+
+                //Debugging - How are we calculating magnitude of stat changes?
+
+                // console.log("GLOBAL DATA: ");
+                // console.log("TARGET ACTIONS: " + this.targetActions);
+                // console.log("TOTAL PLAYER ACTIONS: " + this.gameState.totalPlayerActions);
+
+                // console.log("LINE OF BEST FIT DATA P1: ");
+                // console.log(p1LineOfBestFitData);
+
+                // console.log("CHANGE MAGNITUDE P1: " + p1StatChangeMagnitude);
+                // console.log("CURRENT AVERAGE Y SUM P1: " + p1CurrentAvgSum);
+                // console.log("CURRENT SLOPE P1: " + p1LineOfBestFitSlope);
+                // console.log("CURRENT YINTERCEPT P1: " + p1LineOfBestFitYIntercept);
+                // console.log("CURRENT Y P1: " + p1LineOfBestFitY);
+                // console.log("NEXT CURRENT Y P1: " + p1LineOfBestFitNextY);
+                // console.log("TARGET X P1: " + p1TargetX1);
+                // console.log("TARGET Y P1: " + p1TargetY1);
+                // console.log("TARGET X2 P1: " + p1TargetX2);
+                // console.log("TARGET Y2 P1: " + p1TargetY2);
+                // console.log("TARGET P1 SLOPE: " + p1TargetSlope);
+                // console.log("NEXT TARGET Y P1: " + p1TargetNextY);
+                // console.log("DESIRED Y P1: " + p1DesiredY);
+                // console.log("P1 DESIRED Y CHANGE: " + p1DesiredYChange);
+                // console.log("P1 CURRENT HEALTH: " + this.gameState.player1Data.currentHP);
+
+                // console.log("LINE OF BEST FIT DATA P2: ");
+                // console.log(p2LineOfBestFitData);
+
+                // console.log("CHANGE MAGNITUDE P2: " + p2StatChangeMagnitude);
+                // console.log("CURRENT AVERAGE Y SUM P2: " + p2CurrentAvgSum);
+                // console.log("CURRENT SLOPE P2: " + p2LineOfBestFitSlope);
+                // console.log("CURRENT YINTERCEPT P2: " + p2LineOfBestFitYIntercept);
+                // console.log("CURRENT Y P2: " + p2LineOfBestFitY);
+                // console.log("NEXT CURRENT Y P2: " + p2LineOfBestFitNextY);
+                // console.log("TARGET X P2: " + p1TargetX1);
+                // console.log("TARGET Y P2: " + p2TargetY1);
+                // console.log("TARGET X2 P2: " + p2TargetX2);
+                // console.log("TARGET Y2 P2: " + p2TargetY2);
+                // console.log("TARGET P2 SLOPE: " + p2TargetSlope);
+                // console.log("NEXT TARGET Y P2: " + p2TargetNextY);
+                // console.log("CURRENT AVERAGE Y SUM P2: " + p2CurrentAvgSum);
+                // console.log("DESIRED Y P2: " + p2DesiredY);
+                // console.log("P2 DESIRED Y CHANGE: " + p2DesiredYChange);
+                // console.log("P2 CURRENT HEALTH: " + this.gameState.player2Data.currentHP);
+
+
+
+
+                return directorActions;
 
                 //TODO: change this to utility rolls for other things depending on gamestate (big feature add - HP, damage, luck, speed...)
-                return this.balanceDamage(player1, player2, statChangeMagnitude, isBuff);
 
             } else {
                 balanceMessage += `Not enough action data to calculate balance adjustment.`;
@@ -219,15 +350,15 @@ class AIDirector {
         const allLivingCharacters = player1LivingCharacters.concat(player2LivingCharacters);
 
         const healers = [];
-        for(let character of allLivingCharacters){
-            for(let action of character.actions){
-                if(action.type === 'heal'||action.type === 'multi_heal'){
+        for (let character of allLivingCharacters) {
+            for (let action of character.actions) {
+                if (action.type === 'heal' || action.type === 'multi_heal') {
                     healers.push(character);
                 }
             }
         }
 
-        if(healers.length === 0){
+        if (healers.length === 0) {
             this.logger.logError("AI Director: There are no characters left to use a healing action! Healing Per Action is 0.");
         }
 
@@ -251,9 +382,13 @@ class AIDirector {
 
     }
 
-    calculateRawStatChange(currentDamagePerAction, desiredAverageDamagePerAction) {
-        let damageDifference = currentDamagePerAction - desiredAverageDamagePerAction;
-        return Utils.mapDamageToRawDamage(damageDifference, Constants.SINGLE_TARGET_SCALAR);
+    calculateRawStatChange(currentDamagePerAction, desiredDamagePerAction) {
+        let damageDifference = desiredDamagePerAction - currentDamagePerAction;
+        let changeDirection = 1;
+        if (damageDifference < 0) {
+            changeDirection = -1;
+        }
+        return changeDirection * Utils.mapDamageToRawDamage(damageDifference, Constants.SINGLE_TARGET_SCALAR);
 
     }
 
@@ -321,73 +456,60 @@ class AIDirector {
         return avgDPA;
     }
 
-    balanceDamage(player1, player2, statChange, isBuff) { //rawStat amount will be positive or negative already
-        //check for living characters
-        const player1LivingCharacters = player1.characters.filter(char => char.isAlive());
-        const player2LivingCharacters = player2.characters.filter(char => char.isAlive());
+    adjustAttack(player, statChange) {
+        let playerLivingCharacters = player.characters.filter(char => char.isAlive());
 
-        if (player1LivingCharacters.length === 0 || player2LivingCharacters === 0) {
+        if (playerLivingCharacters.length === 0) {
             logger.logAction("AI Director: One team is defeated, no need to balance damage.");
             return;
         }
 
-        //TODO: Should this also account for targeted (e.g. one player) buffs?
-        const targets = player1LivingCharacters.concat(player2LivingCharacters);
-        //Add player strings together
-        const playerNum = player1LivingCharacters[0].player + ", " + player2LivingCharacters[0].player;
-
-        let randomNumber = RNG.next();
-        let cumulativeValue = 0;
-
-        //
-        if (isBuff) { //negative, buff damage output
-            let buffAction = {};
-            if (randomNumber <= .5) {
-                const buffAction = {
-                    type: 'buff',
-                    targets: targets,
-                    stats: ['Attack', 'MagicAttack'],
-                    amount: statChange,
-                    playerNum: playerNum
-                }
-                return buffAction;
-                this.gameState.actionQueue.push(buffAction);
-            } else {
-                const nerfAction = {
-                    type: 'nerf',
-                    targets: targets,
-                    stats: ['Defense', 'MagicDefense'],
-                    amount: statChange,
-                    playerNum: playerNum
-                }
-                return nerfAction;
-                this.gameState.actionQueue.push(nerfAction);
-            }
-
-        } else { //negative, nerf damage output
-            if (randomNumber <= .5) {
-                const nerfAction = {
-                    type: 'nerf',
-                    targets: targets,
-                    stats: ['Attack', 'MagicAttack'],
-                    amount: statChange,
-                    playerNum: playerNum
-                }
-                return nerfAction;
-                actionQueue.push(nerfAction);
-            } else {
-                const buffAction = {
-                    type: 'buff',
-                    targets: targets,
-                    stats: ['Defense', 'MagicDefense'],
-                    amount: statChange,
-                    playerNum: playerNum
-                }
-                return buffAction;
-                actionQueue.push(buffAction);
-            }
+        let playerNum = player.playerNumber;
+        let type = "";
+        if (statChange >= 0) {
+            type = "buff";
+        } else {
+            type = "nerf";
         }
+
+        let directorAction = {
+            type: type,
+            targets: playerLivingCharacters,
+            stats: ['Attack', 'MagicAttack'],
+            amount: statChange / 2,
+            playerNum: playerNum
+        }
+
+        return directorAction;
     }
+
+    adjustDefense(player, statChange) {
+        let playerLivingCharacters = player.characters.filter(char => char.isAlive());
+
+        if (playerLivingCharacters.length === 0) {
+            logger.logAction("AI Director: One team is defeated, no need to balance damage.");
+            return;
+        }
+
+        let playerNum = player.playerNumber;
+        let type = "";
+        if (statChange >= 0) {
+            type = "buff";
+        } else {
+            type = "nerf";
+        }
+
+        let directorAction = {
+            type: type,
+            targets: playerLivingCharacters,
+            stats: ['Defense', 'MagicDefense'],
+            amount: statChange / 2,
+            playerNum: playerNum
+        }
+
+        return directorAction;
+    }
+
 
     balanceCurrHP(player1, player2, log, actionQueue) {
         //check for living characters

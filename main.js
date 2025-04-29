@@ -39,7 +39,7 @@ const runRepeatedSimulations = (numSimulations = 1, aiDirector = new AIDirector(
         console.log("Simulation Number: " + (i+1))
 
         const winner = game.checkGameOver();
-        totalTimeSteps += game.timeStep;
+        totalTimeSteps += game.gameState.timeStep;
         totalActions += game.gameState.totalPlayerActions;
         if (winner === 1) {
             player2Wins++; //Player 2 causes player 1 to lose.

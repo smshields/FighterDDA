@@ -1,9 +1,8 @@
 const Utils = require('../utils/Utils');
 const RNG = require('../utils/RNG');
-const Constants = require('../utils/Constants');
 
 class AIPlayer {
-    constructor(playerNumber, characters, mode = Constants.DEFAULT_PLAYER_AI, lowHealthThreshold = Constants.LOW_HEALTH_THRESHOLD) {
+    constructor(playerNumber, characters, mode = 'optimal', lowHealthThreshold = 0.3) {
         this.playerNumber = playerNumber;
         this.characters = characters;
         this.lowHealthThreshold = lowHealthThreshold; // 30% HP or less is considered low health
@@ -34,6 +33,14 @@ class AIPlayer {
         let totalValue = 0;
         for (const action of character.actions) {
             totalValue += actionValues[action.type];
+        }
+
+        //Debug: check values for decision making
+        for (const action of character.actions) {
+            console.log("CHARACTER PLAYER: " + character.playerNumber);
+            console.log("CHARACTER NAME: " + character.name);
+            console.log("ACTION TYPE: " + action.type);
+            console.log("EVALUATION SCORE: " + actionValues[action.type]);
         }
 
         let randomNumber = RNG.next() * totalValue;
@@ -95,52 +102,66 @@ class AIPlayer {
         let maxClamp = 0;
         //    map(value, sourceMin, sourceMax, targetMin, targetMax) {
         switch (action.type) {
-            case 'attack':
+            case 'attack': {
                 //Value attacking weakest opponent
                 if (target) {
-                    value = (character.stats.Attack - target.stats.Defense);
+                    value = (character.stats.Attack - target.stats.Defense) * Constants.SINGLE_TARGET_SCALAR;
                     minClamp = -90;
                     maxClamp = 90;
                     value = Utils.map(value, minClamp, maxClamp, 0, 1);
                 }
                 break;
-            case 'multi_attack':
-                //Value multiattack based on average defense
+            }
+            case 'multi_attack': {
+                //Value multiattack based on average defense - we use single scalar because we're working with an average 
                 const aliveOpponents = opponents.filter(c => c.isAlive());
-                let averageDefense = aliveOpponents.length > 0 ? aliveOpponents.reduce((sum, char) => sum + char.stats.Defense, 0) / aliveOpponents.length : 0;
-                value = (character.stats.Attack - averageDefense) * aliveOpponents.length;
-                minClamp = -90 * aliveOpponents.length;
-                maxClamp = 90 * aliveOpponents.length;
-                value = Utils.map(value, minClamp, maxClamp, 0, 1);
+                let totalDamage = 0;
+                for (let target of aliveOpponents) {
+                    totalDamage += (character.stats.Attack - target.stats.Defense) * Constants.MULTI_TARGET_SCALAR;
+                }
+                console.log("MULTI ATTACK TOTAL DAMAGE: " + totalDamage);
+
+                minClamp = -90;
+                maxClamp = 90;
+                value = Utils.map(totalDamage, minClamp, maxClamp, 0, 1);
                 break;
-            case 'magic_attack':
+            }
+            case 'magic_attack': {
                 //Value attacking weakest opponent
                 if (target) {
-                    value = (character.stats.MagicAttack - target.stats.MagicDefense);
+                    value = (character.stats.MagicAttack - target.stats.MagicDefense) * Constants.SINGLE_TARGET_SCALAR;
                     minClamp = -90;
                     maxClamp = 90;
                     value = Utils.map(value, minClamp, maxClamp, 0, 1);
                 }
                 break;
-            case 'multi_magic_attack':
-                //Value multiattack based on average magic defense
+            }
+            case 'multi_magic_attack':{
+                //Value multiattack based on average magic defense - we use single scalar because we're working with an average
                 const aliveMagicOpponents = opponents.filter(c => c.isAlive());
-                let averageMagicDefense = aliveMagicOpponents.length > 0 ? aliveMagicOpponents.reduce((sum, char) => sum + char.stats.MagicDefense, 0) / aliveMagicOpponents.length : 0;
-                value = (character.stats.MagicAttack - averageMagicDefense) * aliveMagicOpponents.length;
-                minClamp = -90 * aliveMagicOpponents.length;
-                maxClamp = 90 * aliveMagicOpponents.length;
-                value = Utils.map(value, minClamp, maxClamp, 0, 1);
+                let totalDamage = 0;
+                for (let target of aliveMagicOpponents) {
+                    totalDamage += (character.stats.MagicAttack - target.stats.MagicDefense) * Constants.MULTI_TARGET_SCALAR;
+                }
+                console.log("MULTI MAGIC ATTACK TOTAL DAMAGE: " + totalDamage);
+
+                minClamp = -90;
+                maxClamp = 90;
+                value = Utils.map(totalDamage, minClamp, maxClamp, 0, 1);
                 break;
-            case 'heal':
+            }
+            case 'heal': {
                 //Value healing weakest ally
                 if (target) {
                     minClamp = 1;
                     maxClamp = target.stats.HP;
                     value = Utils.map(target.stats.currentHP, minClamp, maxClamp, 0, 1);
                     value = 1 - value;
+                    console.log("HEALING CALCULATION - MAX HP: " + target.stats.HP + ", CURRENT HP: " + target.stats.currentHP);
                 }
                 break;
-            case 'multi_heal':
+            }
+            case 'multi_heal': {
                 //Value based on low health across team
                 const aliveAllies = allies.filter(c => c.isAlive());
                 let totalMaxHealth = 0;
@@ -155,11 +176,13 @@ class AIPlayer {
                 value = Utils.map(totalCurrentHealth, minClamp, maxClamp, 0, 1);
                 value = 1 - value;
                 break;
-            case 'defend':
+            }
+            case 'defend': {
                 // Value defend based on missing health, but keep it in a reasonable range
                 const healthRatio = 1 - (character.stats.currentHP / character.stats.HP);
                 value = (healthRatio ** 2) / 1.25;
                 break;
+            }
         }
         return value;
     }

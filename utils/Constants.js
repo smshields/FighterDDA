@@ -38,7 +38,7 @@ class Constants {
     static ACTION_EXECUTION_INTERVAL = 3; //determines how many timesteps to wait before executing an action
 
     //TODO: Make this dynamic based on magnitude of balancing needed
-    static DIRECTOR_ACTION_INTERVAL = 90; //Number of timeSteps between each director action
+    static DIRECTOR_ACTION_INTERVAL = 30; //Number of timeSteps between each director action
     static MAX_BUFF_AMOUNT = 30; //clamps maximum buff
     static MAX_NERF_AMOUNT = 30; //clamps minimum buff
 

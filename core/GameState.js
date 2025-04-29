@@ -19,6 +19,7 @@ class GameState {
 
 		this.totalPlayerDamageOut = 0;
 
+		//[actions, p1HP, p2HP, totalHP]
 		this.actionCurrHPData = [];
 
 		this.totalHP = 0;

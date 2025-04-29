@@ -55,6 +55,14 @@ class Game {
         //set initial gamestate for players
         this.gameState.initPlayer1Data(player1TotalHP);
         this.gameState.initPlayer2Data(player2TotalHP);
+
+        //add initial state for action to HP data
+        this.gameState.actionCurrHPData.push([
+            this.gameState.totalPlayerActions,
+            this.gameState.player1Data.currentHP,
+            this.gameState.player2Data.currentHP,
+            this.gameState.currentTotalHP
+        ]); //update based on array
     }
 
     checkGameOver() {
@@ -74,10 +82,14 @@ class Game {
 
         const opponent = this.players.find(p => p !== player);
         const chosenAction = player.chooseAction(character, opponent.characters);
-        if (!chosenAction) return;
+        if (!chosenAction) { 
+            Logger.logError("ENQUEUE ACTION: No action selected!");
+            return; 
+        }
 
         const targets = this.getTargets(character, chosenAction, opponent.characters, player.characters);
         this.gameState.actionQueue.push({
+            timeStep: this.gameState.timeStep,
             character,
             chosenAction,
             targets,
@@ -119,39 +131,75 @@ class Game {
         });
 
         //Add any new actions for characters with full speed meter
+        let actingCharacters = [];
         this.players.forEach(player => {
             player.characters.forEach(character => {
                 if (character.isAlive()) {
                     character.addActionPoints();
                     if (character.actionBar >= 100) {
-                        this.enqueueAction(player, character);
+                        actingCharacters.push({"player":player, "character":character});
+
+                        
                         character.resetActionBar();
                     }
                 }
             });
         });
 
+        actingCharacters.sort((a, b) => {
+            let comparator = b.character.stats.Speed - a.character.stats.Speed;
+            if(comparator > 0){
+                return 1;
+            } else if (comparator < 0){
+                return -1;
+            } else { //if there is a speed tie, pick randomly
+                if(Math.random() < 0.5){
+                    return 1;
+                } else {
+                    return -1;
+                }
+            }
+        });
+
+        for(let actingCharacter of actingCharacters){
+            this.enqueueAction(actingCharacter.player, actingCharacter.character);
+        }
+
         // Balance the game every n=directorActionInterval steps
         if (this.gameState.timeStep % this.directorActionInterval === 0 && this.aiDirector) {
-            console.log("ATTEMPTING TO BALANCE");
-            let directorAction = this.aiDirector.balanceGame(this.players, this.log, this.gameState.timeStep, this.gameState.actionQueue);
-            if (directorAction) {
-                console.log("ACTUALLY BALANCING");
-                this.executeAIDirectorAction(directorAction, timeStepLog);
+            //TODO: Make this return an array of actions, iterate through, execute all
+            let directorActions = this.aiDirector.balanceGame(this.players, this.log, this.gameState.timeStep, this.gameState.actionQueue);
+            let containsMultipleActions = Array.isArray(directorActions);
+
+            if (!containsMultipleActions && directorActions) {
+                directorActions = [directorActions];
+            }
+
+            if (directorActions) {
+                for (let action of directorActions) {
+                    //this.executeAIDirectorAction(action, timeStepLog);
+                }
             }
         }
 
         //before executing actions, save previous turn's number of actions
         this.gameState.prevTotalPlayerActions = this.gameState.totalPlayerActions;
 
-        // Execute Actions for turn
-        if (this.gameState.timeStep % this.actionExecutionInterval === 0 && this.gameState.actionQueue.length > 0) {
+        //if the difference between the current time step and the action timestep is >= actionExecution interval, 
+        //continue executing
+
+        while(this.gameState.actionQueue.length > 0 && this.gameState.timeStep - this.gameState.actionQueue[0].timeStep >= this.actionExecutionInterval){
             let action = this.gameState.actionQueue.shift();
 
             if (action.type != 'buff' || action.type != 'nerf' || action.type != 'heal' || action.type != 'damage') {
                 this.executeAction(action, timeStepLog); // Handle character actions
                 const currentTotalHP = this.gameState.player1Data.currentHP + this.gameState.player2Data.currentHP;
-                this.gameState.actionCurrHPData.push([this.gameState.totalPlayerActions, currentTotalHP]); //update based on array
+                this.gameState.actionCurrHPData.push([
+                    this.gameState.totalPlayerActions,
+                    this.gameState.player1Data.currentHP,
+                    this.gameState.player2Data.currentHP,
+                    this.gameState.currentTotalHP
+                ]); //update based on array
             }
         }
 
@@ -350,6 +398,7 @@ class Game {
         } = action;
         let actionMessage = `AI Director: is using ${type}. `;
 
+        //I can refactor/consolidate this.
         if (type === 'buff') {
             for (let target of targets) {
                 for (let stat of stats) {
@@ -379,16 +428,16 @@ class Game {
                     switch (target.name) {
                         //TODO: am I going to have this  
                         case 'warrior':
-                            this.updateWarriorStat(target, stat, -1 * amount);
+                            this.updateWarriorStat(target, stat, amount);
                             break;
                         case 'mage':
-                            this.updateWarriorStat(target, stat, -1 * amount);
+                            this.updateMageStat(target, stat, amount);
                             break;
                         case 'priest':
-                            this.updateWarriorStat(target, stat, -1 * amount);
+                            this.updatePriestStat(target, stat, amount);
                             break;
                         case 'rogue':
-                            this.updateWarriorStat(target, stat, -1 * amount);
+                            this.updateRogueStat(target, stat, amount);
                             break;
                         default:
                             this.logger.logError(`AI Director: No valid target/stat to buff. Attempted to ${type} ${stat}`);
@@ -397,7 +446,7 @@ class Game {
                     actionMessage += ` ${type} player ${target.playerNumber}'s ${target.name}'s ${stat} by ${amount}. New value: ${target.stats[stat]}`;
                 }
             }
-        //TODO
+            //TODO
         } else if (type === 'heal') {
             for (let target of targets) {
                 //TODO: refactor out
