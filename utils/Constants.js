@@ -14,6 +14,11 @@ class Constants {
     static DEFAULT_PLAYER_AI = 'optimal'; //determines AI of player if not specified
     static PLAYER_1_AI = 'optimal'; //determines AI type of player 1 - optimal, random, suboptimal
     static PLAYER_2_AI = 'optimal'; //determines AI type of player 2 - optimal, random, suboptimal
+    static PLAYER_1_AI_RANDOMNESS = 1; //determines chance of diverging from ranked choices (1 = always pick highest ranked)
+    static PLAYER_2_AI_RANDOMNESS = 1;
+    static PLAYER_1_AI_INVERT_DECISION = false; //switches AI to pick lowest rank option
+    static PLAYER_2_AI_INVERT_DECISION = false;
+
 
     static MULTI_TARGET_SCALAR = 0.25; //Scales multi-target damage
     static SINGLE_TARGET_SCALAR = 1; //Scales single-target damage
@@ -22,11 +27,13 @@ class Constants {
     static SPEED_SCALAR = 0.1; //scales how fast speed adds to action meter
     static DEFENSE_SCALAR = 1.25; //determines how much defend boosts defense
 
-    //TODO: We should dynamically calculate this based off of min attack/defense
+    //TODO: We should dynamically calculate this based off of min attack/defense?
     static MAX_POSSIBLE_RAW_DAMAGE = 90;
     static MIN_POSSIBLE_RAW_DAMAGE = -90;
+    static MAX_POSSIBLE_DAMAGE = 100;
+    static MIN_POSSIBLE_DAMAGE = 1;
 
-    //TODO: We should dynamically calculate this based off of defense averages
+    //TODO: We should dynamically calculate this based off of defense averages?
     static MAX_POSSIBLE_RAW_HEAL = 100;
     static MIN_POSSIBLE_RAW_HEAL = 10;
 
@@ -34,20 +41,20 @@ class Constants {
     static MAX_HP = 100;
     static MIN_HP = 0;
 
-    //TODO: Ensure that this is executing actions queued on the same step on the same step
     static ACTION_EXECUTION_INTERVAL = 3; //determines how many timesteps to wait before executing an action
 
-    //TODO: Make this dynamic based on magnitude of balancing needed
+    //TODO: Make this dynamic based on magnitude of balancing needed?
     static DIRECTOR_ACTION_INTERVAL = 30; //Number of timeSteps between each director action
+
+    static CLAMP_STAT_CHANGE = false; //allows us to clamp how much something is buffed/nerfed
     static MAX_BUFF_AMOUNT = 30; //clamps maximum buff
     static MAX_NERF_AMOUNT = 30; //clamps minimum buff
 
-    static DIFFICULTY_ADJUSTMENT_SCALAR = 0.01; //scales difficulty scalar against balance direction/magnitude
     static TARGET_ACTIONS = 60; //determines the target amount of actions for difficulty
     
-    static STAT_FUZZINESS = 20; //scales how much to add/subtract during chracter stat initialization
+    static STAT_FUZZINESS = 20; //scales range of random add/subtract during chracter stat initialization
 
-    static LOW_HEALTH_THRESHOLD = 0.3;
+    static LOW_HEALTH_THRESHOLD = 0.3; //determines when we consider a character to be at low health
 
     //Sets base, min, max stats of all character types
     static WARRIOR_NAME = 'warrior';

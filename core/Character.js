@@ -1,3 +1,9 @@
+/**
+ * TODO - REFACTOR/DEPRECATE: 
+ * 1. make actions their own class and have constants/subclasses for unique ones  
+ * */
+
+
 const Constants = require('../utils/Constants');
 const RNG = require('../utils/RNG');
 const GameState = require('./GameState');
@@ -136,7 +142,7 @@ class Character {
         let minHeal = (avgDef * (this.stats.Luck / 100) * (target.stats.Luck / 100));
         //randomly pick (based off of game seed) a value between minimum possible heal and average defense, tune against scalar, consider target's luck
         let rawHeal = Utils.round((minHeal + ((avgDef - minHeal) * RNG.next())) * scalar, 2);
-        let heal = Math.min(target.getMaxPossibleHP() - target.stats.currentHP, rawHeal);
+        let heal = Math.min(target.stats.HP - target.stats.currentHP, rawHeal);
         target.stats.currentHP += heal;
         return heal;
     }
