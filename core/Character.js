@@ -162,6 +162,10 @@ class Character {
                 return;
         }
     }
+
+    getHPRatio(){
+        return this.stats.currentHP / this.stats.HP;
+    }
 }
 
 module.exports = Character;

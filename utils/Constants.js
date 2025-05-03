@@ -14,8 +14,8 @@ class Constants {
     static DEFAULT_PLAYER_AI = 'optimal'; //determines AI of player if not specified
     static PLAYER_1_AI = 'optimal'; //determines AI type of player 1 - optimal, random, suboptimal
     static PLAYER_2_AI = 'optimal'; //determines AI type of player 2 - optimal, random, suboptimal
-    static PLAYER_1_AI_RANDOMNESS = 1; //determines chance of diverging from ranked choices (1 = always pick highest ranked)
-    static PLAYER_2_AI_RANDOMNESS = 1;
+    static PLAYER_1_AI_RANDOMNESS = 0; //determines chance of diverging from ranked choices (0 = always pick highest ranked)
+    static PLAYER_2_AI_RANDOMNESS = 0;
     static PLAYER_1_AI_INVERT_DECISION = false; //switches AI to pick lowest rank option
     static PLAYER_2_AI_INVERT_DECISION = false;
 
