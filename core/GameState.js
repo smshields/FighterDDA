@@ -1,3 +1,8 @@
+/**
+ * TODO - REFACTORING:
+ * - incrementPlayerXActions should be one function that takes a playerNumber parameter.
+ * */
+
 const Constants = require('../utils/Constants');
 const Utils = require('../utils/Utils');
 const Logger = require('../logging/Logger');

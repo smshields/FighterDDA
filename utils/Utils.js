@@ -1,10 +1,10 @@
-/** TODO - TESTING:
+/** 
+ * TODO - TESTING:
  * safeDivide, getRandomElement, round
  * 
  * TODO - DEPRECATE/REWRITE:
  * mapRawDamageToDamage, mapDamageToRawDamage
  */
-
 const Constants = require('./Constants');
 
 /** A static classed containing generic helper functions. */
@@ -32,6 +32,29 @@ class Utils {
      */
     static getRandomElement(array) {
         return array[Math.floor(Math.random() * array.length)];
+    }
+
+    /** Finds slope between two points
+     * @param {double} x1 - the first point's x value.
+     * @param {double} y1 - the first point's y value.
+     * @param {double} x2 - the second point's x value.
+     * @param {double} y2 - the second point's y value.
+     * @returns {double} The slope between the two points.
+     */
+    static getSlopeFromPoints(x1, y1, x2, y2){
+        let rise = y2 - y1;
+        let run = x2 - x1;
+        return this.safeDivide(rise, run);
+    }
+
+    /** Finds yIntercept based on a slope and point on the line.
+     * @param {double} x - the x of point.
+     * @param {double} y - the y of point.
+     * @param {double} slope - the slope of the line.
+     * @returns {double} The y intercept of the line.
+     * */
+    static getYIntercept(x, y, slope){
+        return (slope * x) - y;
     }
 
     static round(number, decimalPlaces) {
