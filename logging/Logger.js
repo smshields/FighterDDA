@@ -1,3 +1,8 @@
+/**TODO - FEATURES:
+ * - Automatically show class, method, involved variables on output
+ * 
+ * */
+
 const InitialLog = require('./InitialLog');
 const Constants = require('../utils/Constants');
 

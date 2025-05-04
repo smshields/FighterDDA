@@ -1,6 +1,7 @@
 /**
  * TODO - REFACTOR/DEPRECATE: 
- * 1. make actions their own class and have constants/subclasses for unique ones  
+ * - make actions their own class and have constants/subclasses for unique ones  
+ * - make dealXDamage have separate single/multi methods, remove scalar from parameters
  * */
 
 

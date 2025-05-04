@@ -1,4 +1,9 @@
-//TODO: Move logging messages here.
+/**TODO - REFACTORING:
+ * - Move logging messages here (or in separate constants file)
+ * TODO - DEPRECATE:
+ * - Rewrite how AI defaults are controlled. Options should be defined here, defaults in the methods.
+ *  
+*/
 
 class Constants {
 
@@ -9,19 +14,20 @@ class Constants {
     static HALT_ON_ERROR = false;
 
     static BALANCE_MODE = 'difficulty'; //determines type of balancing - inclusion/difficulty
+
+    static OPTIMAL_PLAYER_AI_MODE = 'optimal';
+    static GRIEFER_PLAYER_AI_MODE = 'griefer';
+    static RANDOM_PLAYER_AI_MODE = 'random';
+
+    static PLAYER_AI_RANDOMNESS = 1; //0 means always pick highest choice, 1 means always pick based on weighted distribution.
     
 
     static DEFAULT_PLAYER_AI = 'optimal'; //determines AI of player if not specified
     static PLAYER_1_AI = 'optimal'; //determines AI type of player 1 - optimal, random, suboptimal
     static PLAYER_2_AI = 'optimal'; //determines AI type of player 2 - optimal, random, suboptimal
-    static PLAYER_1_AI_RANDOMNESS = 0; //determines chance of diverging from ranked choices (0 = always pick highest ranked)
-    static PLAYER_2_AI_RANDOMNESS = 0;
-    static PLAYER_1_AI_INVERT_DECISION = false; //switches AI to pick lowest rank option
-    static PLAYER_2_AI_INVERT_DECISION = false;
 
-
-    static MULTI_TARGET_SCALAR = 0.25; //Scales multi-target damage
-    static SINGLE_TARGET_SCALAR = 1; //Scales single-target damage
+    static MULTI_TARGET_SCALAR = 0.1; //Scales multi-target damage
+    static SINGLE_TARGET_SCALAR = 0.4; //Scales single-target damage
     static HEAL_SCALAR = 0.1; //scales healing 
     static MULTI_HEAL_SCALAR = 0.025; //scales multi-target healing
     static SPEED_SCALAR = 0.1; //scales how fast speed adds to action meter
@@ -41,16 +47,16 @@ class Constants {
     static MAX_HP = 100;
     static MIN_HP = 0;
 
-    static ACTION_EXECUTION_INTERVAL = 3; //determines how many timesteps to wait before executing an action
+    static ACTION_EXECUTION_INTERVAL = 20; //determines how many timesteps to wait before executing an action
 
     //TODO: Make this dynamic based on magnitude of balancing needed?
-    static DIRECTOR_ACTION_INTERVAL = 30; //Number of timeSteps between each director action
+    static DIRECTOR_ACTION_INTERVAL = 3; //Number of timeSteps between each director action
 
     static CLAMP_STAT_CHANGE = false; //allows us to clamp how much something is buffed/nerfed
     static MAX_BUFF_AMOUNT = 30; //clamps maximum buff
     static MAX_NERF_AMOUNT = 30; //clamps minimum buff
 
-    static TARGET_ACTIONS = 60; //determines the target amount of actions for difficulty
+    static TARGET_ACTIONS = 40; //determines the target amount of actions for difficulty
     
     static STAT_FUZZINESS = 20; //scales range of random add/subtract during chracter stat initialization
 
@@ -176,6 +182,14 @@ class Constants {
     static ROGUE_LUCK_MIN = 50;
     static ROGUE_LUCK_MAX = 100;
     static ROGUE_LUCK_BASE = 80;
+
+    static ATTACK_ACTION_TYPE = 'attack';
+    static MULTI_ATTACK_ACTION_TYPE = 'multi_attack';
+    static MAGIC_ATTACK_ACTION_TYPE = 'magic_attack';
+    static MULTI_MAGIC_ATTACK_ACTION_TYPE = 'multi_magic_attack';
+    static HEAL_ACTION_TYPE = 'heal';
+    static MULTI_HEAL_ACTION_TYPE = 'multi_heal';
+    static DEFEND_ACTION_TYPE = 'defend';
 
 }
 
