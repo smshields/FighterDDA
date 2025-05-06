@@ -241,7 +241,7 @@ class AIDirector {
             } else {
                 balanceMessage += `Not enough action data to calculate balance adjustment.`;
                 this.logger.logAction(balanceMessage);
-                return;
+                return [];
             }
 
 
@@ -460,7 +460,7 @@ class AIDirector {
         let playerLivingCharacters = player.characters.filter(char => char.isAlive());
 
         if (playerLivingCharacters.length === 0) {
-            logger.logAction("AI Director: One team is defeated, no need to balance damage.");
+            this.logger.logAction("AI Director: One team is defeated, no need to balance damage.");
             return;
         }
 
@@ -487,7 +487,7 @@ class AIDirector {
         let playerLivingCharacters = player.characters.filter(char => char.isAlive());
 
         if (playerLivingCharacters.length === 0) {
-            logger.logAction("AI Director: One team is defeated, no need to balance damage.");
+            this.logger.logAction("AI Director: One team is defeated, no need to balance damage.");
             return;
         }
 

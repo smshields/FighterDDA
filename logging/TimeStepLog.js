@@ -1,11 +1,12 @@
 class TimeStepLog {
 
 	constructor(currentTimeStep) {
-		this.timeStep = this.timeStep;
-		this.totalActions = 0;
+		this.timeStep = this.timeStep; //done
+		this.totalActions = 0; 
 		this.totalCurrentHP = 0;
 		this.actionsInQueue = [];
 		this.actionsExecuted = [];
+		this.directorActions = [];
 		this.player1 = {
 			player1TotalActions: 0,
 			player1CurrentTotalHealth: 0,

@@ -1,7 +1,13 @@
 /**
- * TODO - REFACTORING
+ * TODO - REFACTORING:
  * - Class for "ActingCharacter"
  * - Class for "Action"
+ * - Method for "RemoveDeadCharactersFromQueue"
+ * - Method for "ExecuteDirectorAction" - simplify process turn logic
+ * - Method for "ExecuteAction" - simplify process turn logic
+ * 
+ * TODO - FEATURES:
+ * - Add separate queue for director actions?
  * */
 
 const RNG = require('../utils/RNG');
@@ -12,8 +18,11 @@ const InitialLog = require('../logging/InitialLog');
 const TimeStepLog = require('../logging/TimeStepLog');
 const Logger = require('../logging/Logger');
 const CharacterActionLog = require('../logging/CharacterActionLog');
-const ActionOutcomeLog = require('../logging/ActionOutcomeLog');
+const CharacterActionOutcomeLog = require('../logging/CharacterActionOutcomeLog');
+const DirectorActionOutcomeLog = require('../logging/DirectorActionOutcomeLog');
 const Action = require('./Action');
+const DirectorActionLog = require('../logging/DirectorActionLog');
+const ActionQueueLog = require('../logging/ActionQueueLog');
 
 class Game {
     constructor(players, aiDirector, directorActionInterval = Constants.DIRECTOR_ACTION_INTERVAL, actionExecutionInterval = Constants.ACTION_EXECUTION_INTERVAL) {
@@ -72,39 +81,7 @@ class Game {
         ]); //update based on array
     }
 
-    checkGameOver() {
-        for (let player of this.players) {
-            if (player.characters.every(c => !c.isAlive())) {
-                return player.playerNumber; // Return the player number who lost
-            }
-        }
-        return null; // No player has lost yet
-    }
-
-    /**
-     * Adds an action to the actionQueue for execution for a given character.
-     * @param {AIPlayer} player - the controlling player.
-     * @param {Character} actor - the acting character.
-     * @returns {bool} Whether or not the action was successfully queued.*/
-    enqueueAction(player, actor) {
-        if (!actor.isAlive()) {
-            return; // Skip enqueuing the action if the character is dead
-        }
-
-        const opponent = this.players.find(p => p !== player);
-
-        const chosenAction = player.chooseAction(actor, player.characters, opponent.characters);
-        if (!chosenAction) { 
-            this.logger.logError("Game - enqueueAction: No action selected!");
-            return false; 
-        }
-
-        let action = new Action(actor, chosenAction.action, chosenAction.actionScore.targets, this.gameState.timeStep);
-
-        this.gameState.actionQueue.push(action);
-        return true;
-    }
-
+    /**Runs a single timestep of the game, enqueuing/executing any relevant actions and checking for end conditions*/
     processTurn() {
         this.gameState.timeStep++;
 
@@ -116,28 +93,6 @@ class Game {
         //init log for this time step
         let timeStepLog = new TimeStepLog(this.gameState.timeStep);
 
-        //add actions in queue to log
-        timeStepLog.actionsInQueue = this.gameState.actionQueue.map(action => {
-            let actionDetails = {
-                player: action.character ? action.character.playerNumber : 'AI Director',
-                character: action.character ? action.character.name : 'AI Director',
-                actionType: action.chosenAction ? action.chosenAction.type : action.type,
-                targetDetails: action.targets ? action.targets.map(target => ({
-                    playerNumber: target.playerNumber,
-                    name: target.name
-                })) : [],
-            };
-
-            // Add AI Director specific details if it's an AI Director action
-            if (action.type === 'buff' || action.type === 'nerf' || action.type === 'heal' || action.type === 'damage') {
-                actionDetails.targetPlayer = action.playerNum;
-                actionDetails.targetCharacter = action.targets;
-                actionDetails.statChanged = action.stats;
-                actionDetails.amountChanged = action.amount;
-            }
-            return actionDetails;
-        });
-
         //Add any new actions for characters with full speed meter
         let actingCharacters = [];
         this.players.forEach(player => {
@@ -145,47 +100,22 @@ class Game {
                 if (character.isAlive()) {
                     character.addActionPoints();
                     if (character.actionBar >= 100) {
-                        actingCharacters.push({"player":player, "character":character});
+                        actingCharacters.push({
+                            "player": player,
+                            "character": character
+                        });
                         character.resetActionBar();
                     }
                 }
             });
         });
 
-        actingCharacters.sort((a, b) => {
-            let comparator = b.character.stats.Speed - a.character.stats.Speed;
-            if(comparator > 0){
-                return 1;
-            } else if (comparator < 0){
-                return -1;
-            } else { //if there is a speed tie, pick randomly
-                if(Math.random() < 0.5){
-                    return 1;
-                } else {
-                    return -1;
-                }
-            }
-        });
+        //execute based on fastest speed
+        actingCharacters.sort((a, b) => this.compareSpeed(a.character, b.character));
 
-        for(let actingCharacter of actingCharacters){
+        //add actions to queue
+        for (let actingCharacter of actingCharacters) {
             this.enqueueAction(actingCharacter.player, actingCharacter.character);
-        }
-
-        // Balance the game every n=directorActionInterval steps
-        if (this.gameState.timeStep % this.directorActionInterval === 0 && this.aiDirector) {
-            //TODO: Make this return an array of actions, iterate through, execute all
-            let directorActions = this.aiDirector.balanceGame(this.players, this.log, this.gameState.timeStep, this.gameState.actionQueue);
-            let containsMultipleActions = Array.isArray(directorActions);
-
-            if (!containsMultipleActions && directorActions) {
-                directorActions = [directorActions];
-            }
-
-            if (directorActions) {
-                for (let action of directorActions) {
-                    this.executeAIDirectorAction(action, timeStepLog);
-                }
-            }
         }
 
         //before executing actions, save previous turn's number of actions
@@ -194,7 +124,7 @@ class Game {
         //if the difference between the current time step and the action timestep is >= actionExecution interval, 
         //continue executing
 
-        while(this.gameState.actionQueue.length > 0 && this.gameState.timeStep - this.gameState.actionQueue[0].timeStepQueued >= this.actionExecutionInterval){
+        while (this.gameState.actionQueue.length > 0 && this.gameState.timeStep - this.gameState.actionQueue[0].timeStepQueued >= this.actionExecutionInterval) {
             let action = this.gameState.actionQueue.shift();
 
             if (action.type != 'buff' || action.type != 'nerf' || action.type != 'heal' || action.type != 'damage') {
@@ -206,6 +136,24 @@ class Game {
                     this.gameState.player2Data.currentHP,
                     this.gameState.currentTotalHP
                 ]); //update based on array
+            }
+        }
+
+        // Balance the game every n=directorActionInterval steps
+        if (this.gameState.timeStep % this.directorActionInterval === 0 && this.aiDirector) {
+            let directorActions = this.aiDirector.balanceGame(this.players, this.log, this.gameState.timeStep, this.gameState.actionQueue);
+            let containsMultipleActions = Array.isArray(directorActions);
+
+            if (!containsMultipleActions && directorActions) {
+                directorActions = [directorActions];
+            }
+
+            directorActions = directorActions.filter(Boolean); //remove null (caused by invalid changes)
+
+            if (directorActions) {
+                for (let action of directorActions) {
+                    this.executeAIDirectorAction(action, timeStepLog);
+                }
             }
         }
 
@@ -231,19 +179,77 @@ class Game {
             }
         }
 
+        //log actionsInQueue, post execution
+        timeStepLog.actionsInQueue = new ActionQueueLog(this.gameState.actionQueue);
+
         // Push the time step log to the main log array
         this.logger.logTimeStep(timeStepLog);
     }
 
+    /** Shows which character has a faster speed. If they are tied, one is randomly selected. */
+    compareSpeed(characterA, characterB) {
+        let comparator = characterB.stats.Speed - characterA.stats.Speed;
+        if (comparator > 0) {
+            return 1;
+        } else if (comparator < 0) {
+            return -1;
+        } else { //if there is a speed tie, pick randomly
+            if (Math.random() < 0.5) {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    checkGameOver() {
+        for (let player of this.players) {
+            if (player.characters.every(c => !c.isAlive())) {
+                return player.playerNumber; // Return the player number who lost
+            }
+        }
+        return null; // No player has lost yet
+    }
+
+    /**
+     * Adds an action to the actionQueue for execution for a given character.
+     * @param {AIPlayer} player - the controlling player.
+     * @param {Character} actor - the acting character.
+     * @returns {bool} Whether or not the action was successfully queued.*/
+    enqueueAction(player, actor) {
+        if (!actor.isAlive()) {
+            return; // Skip enqueuing the action if the character is dead
+        }
+
+        const opponent = this.players.find(p => p !== player);
+
+        const chosenAction = player.chooseAction(actor, player.characters, opponent.characters);
+        if (!chosenAction) {
+            this.logger.logError("Game - enqueueAction: No action selected!");
+            return false;
+        }
+
+        let action = new Action(actor, chosenAction.action, chosenAction.actionScore.targets, this.gameState.timeStep);
+
+        this.gameState.actionQueue.push(action);
+        return true;
+    }
+
+
+
     /**Executes an action object.
      * @param {Action} The action to be performed.
-     * @returns {bool} If the action was successful.
+     * @returns {CharacterActionOutcomeLog} Details on if the action was successful.
      * */
     executeAction(action, timeStepLog) {
-        console.log("reached");
+
+        let characterActionOutcomeLog = new CharacterActionOutcomeLog(action);
+
+
         // If this character is currently defending, stop
         if (action.actor.defenseBoosted) {
             action.actor.resetDefense;
+            characterActionOutcomeLog.setDefenseBoostReset(true);
         }
 
         // Filter out dead targets
@@ -264,7 +270,6 @@ class Game {
 
         //Logging for Player Action
         let actionMessage = `Game - executeAction: Player ${action.actor.playerNumber}'s ${action.actor.name} is using ${action.action.type}. `;
-        let characterActionLog = new CharacterActionLog(action.actor.playerNumber, action.actor.name, action.action.type);
 
         const defeatedCharacters = []; // Keep track of defeated characters in this action
 
@@ -272,27 +277,27 @@ class Game {
             case "attack":
                 {
                     let prevCurrentHP = action.targets[0].stats.currentHP;
-                    let damage = action.actor.dealAttackDamage(action.targets[0], Constants.SINGLE_TARGET_SCALAR);
-                    actionMessage += `Deals ${Math.floor(damage)} damage to player ${action.targets[0].playerNumber}'s ${action.targets[0].name}. `;
-                    characterActionLog.outcomes.push(new ActionOutcomeLog(action.targets[0].name, damage, prevCurrentHP, action.targets[0].stats.currentHP, null, null, null, null));
+                    let damage = Utils.round(action.actor.dealAttackDamage(action.targets[0], Constants.SINGLE_TARGET_SCALAR));
+                    actionMessage += `Deals ${damage} damage to player ${action.targets[0].playerNumber}'s ${action.targets[0].name}. `;
+                    characterActionOutcomeLog.addTargetOutcome(action.targets[0], action, prevCurrentHP, null, null);
                     break;
                 }
             case "multi_attack":
                 {
                     for (let target of aliveTargets) {
                         let prevCurrentHP = target.stats.currentHP;
-                        let damage = action.actor.dealAttackDamage(target, Constants.MULTI_TARGET_SCALAR);
-                        actionMessage += `Deals ${Math.floor(damage)} damage to player ${target.playerNumber}'s ${target.name}. `;
-                        characterActionLog.outcomes.push(new ActionOutcomeLog(target.name, damage, prevCurrentHP, target.stats.currentHP, null, null, null, null));
+                        let damage = Utils.round(action.actor.dealAttackDamage(target, Constants.MULTI_TARGET_SCALAR));
+                        actionMessage += `Deals ${damage} damage to player ${target.playerNumber}'s ${target.name}. `;
+                        characterActionOutcomeLog.addTargetOutcome(target, action, prevCurrentHP, null, null);
                     }
                     break;
                 }
             case 'magic_attack':
                 {
                     let prevCurrentHP = action.targets[0].stats.currentHP;
-                    let damage = action.actor.dealMagicAttackDamage(action.targets[0], Constants.SINGLE_TARGET_SCALAR);
-                    actionMessage += `Deals ${Math.floor(damage)} damage to player ${action.targets[0].playerNumber}'s ${action.targets[0].name}. `;
-                    characterActionLog.outcomes.push(new ActionOutcomeLog(action.targets[0].name, damage, prevCurrentHP, action.targets[0].stats.currentHP, null, null, null, null));
+                    let damage = Utils.round(action.actor.dealMagicAttackDamage(action.targets[0], Constants.SINGLE_TARGET_SCALAR));
+                    actionMessage += `Deals ${damage} damage to player ${action.targets[0].playerNumber}'s ${action.targets[0].name}. `;
+                    characterActionOutcomeLog.addTargetOutcome(action.targets[0], action, prevCurrentHP, null, null);
                     break;
                 }
 
@@ -300,27 +305,27 @@ class Game {
                 {
                     for (let target of aliveTargets) {
                         let prevCurrentHP = target.stats.currentHP;
-                        let damage = action.actor.dealMagicAttackDamage(target, Constants.MULTI_TARGET_SCALAR);
-                        actionMessage += `Deals ${Math.floor(damage)} damage to player ${target.playerNumber}'s ${target.name}. `;
-                        characterActionLog.outcomes.push(new ActionOutcomeLog(target.name, damage, prevCurrentHP, target.stats.currentHP, null, null, null, null));
+                        let damage = Utils.round(action.actor.dealMagicAttackDamage(target, Constants.MULTI_TARGET_SCALAR));
+                        actionMessage += `Deals ${damage} damage to player ${target.playerNumber}'s ${target.name}. `;
+                        characterActionOutcomeLog.addTargetOutcome(target, action, prevCurrentHP, null, null);
                     }
                     break;
                 }
             case 'heal':
                 {
                     let prevCurrentHP = action.targets[0].stats.currentHP;
-                    let healAmount = action.actor.performHeal(action.targets[0], Constants.HEAL_SCALAR);
+                    let healAmount = Utils.round(action.actor.performHeal(action.targets[0], Constants.HEAL_SCALAR));
                     actionMessage += `Heals ${healAmount} health to player ${action.targets[0].playerNumber}'s ${action.targets[0].name}. `;
-                    characterActionLog.outcomes.push(new ActionOutcomeLog(action.targets[0].name, healAmount, prevCurrentHP, action.targets[0].stats.currentHP, null, null, null, null));
+                    characterActionOutcomeLog.addTargetOutcome(action.targets[0], action, prevCurrentHP, null, null);
                     break;
                 }
             case 'multi_heal':
                 {
                     for (let target of aliveTargets) {
                         let prevCurrentHP = target.stats.currentHP;
-                        let healAmount = action.actor.performHeal(target, Constants.HEAL_SCALAR);
+                        let healAmount = Utils.round(action.actor.performHeal(target, Constants.HEAL_SCALAR));
                         actionMessage += `Heals ${healAmount} health to player ${target.playerNumber}'s ${target.name}. `;
-                        characterActionLog.outcomes.push(new ActionOutcomeLog(target.name, healAmount, prevCurrentHP, target.stats.currentHP, null, null, null, null));
+                        characterActionOutcomeLog.addTargetOutcome(target, action, prevCurrentHP, null, null);
                     }
                     break;
                 }
@@ -330,7 +335,7 @@ class Game {
                     let prevMagicDefense = action.actor.stats.MagicDefense;
                     action.actor.applyDefenseBoost();
                     actionMessage += `${action.actor.name} is defending. `;
-                    characterActionLog.outcomes.push(new ActionOutcomeLog(action.actor.name, null, null, null, prevDefense, action.actor.stats.Defense, prevMagicDefense, action.actor.stats.MagicDefense));
+                    characterActionOutcomeLog.addTargetOutcome(action.actor, action, null, prevDefense, prevMagicDefense);
                     break;
                 }
             default:
@@ -341,8 +346,7 @@ class Game {
 
         this.logger.logAction(actionMessage);
 
-        timeStepLog.actionsExecuted.push(characterActionLog);
-
+        //TODO: Check if I need this...
         aliveTargets.forEach(target => {
             if (!target.isAlive()) {
                 defeatedCharacters.push(target);
@@ -353,45 +357,11 @@ class Game {
             this.logger.logAction(`Game - executeAction: ${target.playerNumber}'s ${target.name} has been killed!`);
         });
 
+        return characterActionOutcomeLog;
     }
 
-    //TODO: Change constructor to have player instead of fetching it from the character
-    getTargets(character, chosenAction, opponents, allies) {
-        let target = null;
-        if (chosenAction.type === 'heal') {
-            // Heal should target only one ally, including the character itself
-            let validHealTargets = allies.filter(c => c.isAlive());
-
-            //The chooseTarget function from the player AI is used to determine the best target
-            target = character.player.chooseTarget(chosenAction, character, [], validHealTargets);
-
-            if (target) {
-                return [target];
-            } else {
-                return [];
-            }
-        } else if (chosenAction.type === 'multi_heal') {
-            // Multi-heal should target all allies, including the character itself
-            return allies.filter(c => c.isAlive());
-        } else {
-            // Other actions (attack, magic) target opponents
-            if (chosenAction.multiTarget) {
-                return opponents.filter(c => c.isAlive());
-            } else {
-                let aliveOpponents = opponents.filter(c => c.isAlive()); // ADDED THIS LINE
-                target = character.player.chooseTarget(chosenAction, character, aliveOpponents, allies); // EDITED THIS LINE
-                if (target) {
-                    return [target];
-                } else {
-                    return [];
-                }
-            }
-        }
-    }
-
-
-
-    executeAIDirectorAction(action, stepLog) {
+    /** Executes an AI Director Action and returns a log detailing outcomes. */
+    executeAIDirectorAction(action) {
         let {
             type,
             targets,
@@ -482,7 +452,7 @@ class Game {
         };
 
         //
-        stepLog.actionsExecuted.push(actionDetails);
+        //stepLog.actionsExecuted.push(actionDetails);
     }
 
     runSimulation(maxSteps = Infinity) {
@@ -659,9 +629,9 @@ class Game {
      * @param {double} playerNumber - the number of the player
      * @returns {AIPlayer} player - the corresponding player object
      * */
-    getPlayerByNum(playerNumber){
-        for(let player of this.players){
-            if(player.playerNumber === playerNumber){
+    getPlayerByNum(playerNumber) {
+        for (let player of this.players) {
+            if (player.playerNumber === playerNumber) {
                 return player;
             }
         }

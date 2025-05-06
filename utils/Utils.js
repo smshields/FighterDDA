@@ -57,7 +57,7 @@ class Utils {
         return (slope * x) - y;
     }
 
-    static round(number, decimalPlaces) {
+    static round(number, decimalPlaces = 2) {
         if (decimalPlaces <= 0) {
             return Math.round(number);
         } else {
