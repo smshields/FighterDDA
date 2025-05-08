@@ -20,11 +20,6 @@ class CharacterActionLog{
 
     }
 
-    /** Converts the log into JSON format for data output. */
-    toJSON(){
-
-    }
-
 }
 
 module.exports = CharacterActionLog;

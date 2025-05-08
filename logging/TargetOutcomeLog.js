@@ -4,7 +4,6 @@ class TargetOutcomeLog {
 		//action/target details
 		this.controller = target.playerNumber;
 		this.characterName = target.name;
-		this.actionType = action.action.type;
 
 		//for heal action
 		this.previousHP = previousHP;

@@ -3,6 +3,7 @@ const Utils = require('../utils/Utils');
 const RNG = require('../utils/RNG');
 const Constants = require('../utils/Constants');
 const Logger = require('../logging/Logger');
+const DirectorAction = require('../core/DirectorAction');
 
 class AIDirector {
     constructor(
@@ -233,7 +234,6 @@ class AIDirector {
 
 
 
-
                 return directorActions;
 
                 //TODO: change this to utility rolls for other things depending on gamestate (big feature add - HP, damage, luck, speed...)
@@ -388,7 +388,7 @@ class AIDirector {
         if (damageDifference < 0) {
             changeDirection = -1;
         }
-        return changeDirection * Utils.mapDamageToRawDamage(damageDifference, Constants.SINGLE_TARGET_SCALAR);
+        return Utils.round(changeDirection * Utils.mapDamageToRawDamage(damageDifference, Constants.SINGLE_TARGET_SCALAR));
 
     }
 
@@ -458,13 +458,13 @@ class AIDirector {
 
     adjustAttack(player, statChange) {
         let playerLivingCharacters = player.characters.filter(char => char.isAlive());
-
         if (playerLivingCharacters.length === 0) {
-            this.logger.logAction("AI Director: One team is defeated, no need to balance damage.");
+            this.logger.logAction("AI Director - AdjustAttack: One team is defeated, no need to balance damage.");
             return;
         }
 
         let playerNum = player.playerNumber;
+        let stats = ['Attack', 'MagicAttack'];
         let type = "";
         if (statChange >= 0) {
             type = "buff";
@@ -472,15 +472,7 @@ class AIDirector {
             type = "nerf";
         }
 
-        let directorAction = {
-            type: type,
-            targets: playerLivingCharacters,
-            stats: ['Attack', 'MagicAttack'],
-            amount: statChange / 2,
-            playerNum: playerNum
-        }
-
-        return directorAction;
+        return new DirectorAction(type, playerNum, playerLivingCharacters, stats, statChange);
     }
 
     adjustDefense(player, statChange) {

@@ -1,5 +1,5 @@
 const CharacterActionLog = require('./CharacterActionLog');
-const DirectorActionLog = require('./DirectorActionLog');
+const Logger = require('./Logger');
 
 
 /**Creates a JSON parseable log from an existing actionQueue*/
@@ -8,6 +8,7 @@ class ActionQueueLog {
     constructor(actionQueue) {
 
     	this.actionQueueLog = [];
+        this.logger = new Logger();
 
 
         for (let action of actionQueue) {
@@ -15,13 +16,13 @@ class ActionQueueLog {
             if (action.actor.playerNumber !== 'AI Director') {
                 this.actionQueueLog.push(new CharacterActionLog(action));
             } else {
-                this.actionQueueLog.push(new DirectorActionLog(action));
+                //Shouldn't be reached
+                this.logger.logError("ActionQueueLog - constructor: Unexpectedly logged director action from actionQueue!");
             }
         }
 
     }
 
-    toJSON(){}
 
 }
 

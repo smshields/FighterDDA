@@ -1,66 +1,49 @@
+const ActionQueueLog = require('./ActionQueueLog');
+const GameState = require('../core/GameState');
+
 class TimeStepLog {
 
 	constructor(currentTimeStep) {
+		
+		//get singleton
+		this.gameState = new GameState();
+
 		this.timeStep = this.timeStep; //done
-		this.totalActions = 0; 
+		this.totalActions = 0;
 		this.totalCurrentHP = 0;
 		this.actionsInQueue = [];
 		this.actionsExecuted = [];
 		this.directorActions = [];
 		this.player1 = {
-			player1TotalActions: 0,
-			player1CurrentTotalHealth: 0,
-			player1CurrentHPRatio: 0,
-			player1TotalDamageDealt: 0,
-			player1TotalDamageTaken: 0,
+			totalActions: 0,
+			currentHP: 0,
+			hpRatio: 0,
+			totalDamageOut: 0,
+			totalDamageIn: 0,
 			characters: {
 				warrior: {
-					currentHP: 0,
-					attack: 0,
-					magicAttack: 0,
-					defense: 0,
-					magicDefense: 0,
-					speed: 0,
-					luck: 0,
+					stats: {},
 					actionsTaken: 0,
-					damageDealt: 0,
-					damageTaken: 0
+					totalDamageOut: 0,
+					totalDamageIn: 0
 				},
 				mage: {
-					currentHP: 0,
-					attack: 0,
-					magicAttack: 0,
-					defense: 0,
-					magicDefense: 0,
-					speed: 0,
-					luck: 0,
+					stats: {},
 					actionsTaken: 0,
-					damageDealt: 0,
-					damageTaken: 0
+					totalDamageOut: 0,
+					totalDamageIn: 0
 				},
 				priest: {
-					currentHP: 0,
-					attack: 0,
-					magicAttack: 0,
-					defense: 0,
-					magicDefense: 0,
-					speed: 0,
-					luck: 0,
+					stats: {},
 					actionsTaken: 0,
-					damageDealt: 0,
-					damageTaken: 0
+					totalDamageOut: 0,
+					totalDamageIn: 0
 				},
 				rogue: {
-					currentHP: 0,
-					attack: 0,
-					magicAttack: 0,
-					defense: 0,
-					magicDefense: 0,
-					speed: 0,
-					luck: 0,
+					stats: {},
 					actionsTaken: 0,
-					damageDealt: 0,
-					damageTaken: 0
+					totalDamageOut: 0,
+					totalDamageIn: 0
 				}
 			}
 		};
@@ -72,55 +55,100 @@ class TimeStepLog {
 			player2TotalDamageTaken: 0,
 			characters: {
 				warrior: {
-					currentHP: 0,
-					attack: 0,
-					magicAttack: 0,
-					defense: 0,
-					magicDefense: 0,
-					speed: 0,
-					luck: 0,
+					stats: {},
 					actionsTaken: 0,
-					damageDealt: 0,
-					damageTaken: 0
+					totalDamageOut: 0,
+					totalDamageIn: 0
 				},
 				mage: {
-					currentHP: 0,
-					attack: 0,
-					magicAttack: 0,
-					defense: 0,
-					magicDefense: 0,
-					speed: 0,
-					luck: 0,
+					stats: {},
 					actionsTaken: 0,
-					damageDealt: 0,
-					damageTaken: 0
+					totalDamageOut: 0,
+					totalDamageIn: 0
 				},
 				priest: {
-					currentHP: 0,
-					attack: 0,
-					magicAttack: 0,
-					defense: 0,
-					magicDefense: 0,
-					speed: 0,
-					luck: 0,
+					stats: {},
 					actionsTaken: 0,
-					damageDealt: 0,
-					damageTaken: 0
+					totalDamageOut: 0,
+					totalDamageIn: 0
 				},
 				rogue: {
-					currentHP: 0,
-					attack: 0,
-					magicAttack: 0,
-					defense: 0,
-					magicDefense: 0,
-					speed: 0,
-					luck: 0,
+					stats: {},
 					actionsTaken: 0,
-					damageDealt: 0,
-					damageTaken: 0
+					totalDamageOut: 0,
+					totalDamageIn: 0
 				}
 			}
 		};
+	}
+
+	updateLogFromGameState(gameState) {
+		this.actionsInQueue = new ActionQueueLog(this.gameState.actionQueue);
+
+		this.totalActions = gameState.totalPlayerActions;
+		this.totalCurrentHP = gameState.currentHP;
+
+		//player 1 details
+		this.player1.totalActions = gameState.player1Data.actions;
+		this.player1.currentHP = gameState.player1Data.currentHP;
+		this.player1.hpRatio = gameState.player1Data.hpRatio;
+		this.player1.totalDamageOut = gameState.player1Data.damageOut;
+		this.player1.totalDamageIn = gameState.player1Data.damageIn;
+
+		//Player 1 character details
+		this.player1.characters.warrior.stats = gameState.player1Data.characterData.warrior.stats;
+		this.player1.characters.warrior.actionsTaken = gameState.player1Data.characterData.warrior.actions;
+		this.player1.characters.warrior.totalDamageOut = gameState.player1Data.characterData.warrior.damageOut;
+		this.player1.characters.warrior.totalDamageIn = gameState.player1Data.characterData.warrior.damageIn;
+
+		this.player1.characters.mage.stats = gameState.player1Data.characterData.mage.stats;
+		this.player1.characters.mage.actionsTaken = gameState.player1Data.characterData.mage.actions;
+		this.player1.characters.mage.totalDamageOut = gameState.player1Data.characterData.mage.damageOut;
+		this.player1.characters.mage.totalDamageIn = gameState.player1Data.characterData.mage.damageIn;
+
+		this.player1.characters.priest.stats = gameState.player1Data.characterData.priest.stats;
+		this.player1.characters.priest.actionsTaken = gameState.player1Data.characterData.priest.actions;
+		this.player1.characters.priest.totalDamageOut = gameState.player1Data.characterData.priest.damageOut;
+		this.player1.characters.priest.totalDamageIn = gameState.player1Data.characterData.priest.damageIn;
+
+		this.player1.characters.rogue.stats = gameState.player1Data.characterData.rogue.stats;
+		this.player1.characters.rogue.actionsTaken = gameState.player1Data.characterData.rogue.actions;
+		this.player1.characters.rogue.totalDamageOut = gameState.player1Data.characterData.rogue.damageOut;
+		this.player1.characters.rogue.totalDamageIn = gameState.player1Data.characterData.rogue.damageIn;
+
+		//player 2 details
+		this.player2.totalActions = gameState.player2Data.actions;
+		this.player2.currentHP = gameState.player2Data.currentHP;
+		this.player2.hpRatio = gameState.player2Data.hpRatio;
+		this.player2.totalDamageOut = gameState.player2Data.damageOut;
+		this.player2.totalDamageIn = gameState.player2Data.damageIn;
+
+		//Player 2 character details
+		this.player2.characters.warrior.stats = gameState.player2Data.characterData.warrior.stats;
+		this.player2.characters.warrior.actionsTaken = gameState.player2Data.characterData.warrior.actions;
+		this.player2.characters.warrior.totalDamageOut = gameState.player2Data.characterData.warrior.damageOut;
+		this.player2.characters.warrior.totalDamageIn = gameState.player2Data.characterData.warrior.damageIn;
+
+		this.player2.characters.mage.stats = gameState.player2Data.characterData.mage.stats;
+		this.player2.characters.mage.actionsTaken = gameState.player2Data.characterData.mage.actions;
+		this.player2.characters.mage.totalDamageOut = gameState.player2Data.characterData.mage.damageOut;
+		this.player2.characters.mage.totalDamageIn = gameState.player2Data.characterData.mage.damageIn;
+
+		this.player2.characters.priest.stats = gameState.player2Data.characterData.priest.stats;
+		this.player2.characters.priest.actionsTaken = gameState.player2Data.characterData.priest.actions;
+		this.player2.characters.priest.totalDamageOut = gameState.player2Data.characterData.priest.damageOut;
+		this.player2.characters.priest.totalDamageIn = gameState.player2Data.characterData.priest.damageIn;
+
+		this.player2.characters.rogue.stats = gameState.player2Data.characterData.rogue.stats;
+		this.player2.characters.rogue.actionsTaken = gameState.player2Data.characterData.rogue.actions;
+		this.player2.characters.rogue.totalDamageOut = gameState.player2Data.characterData.rogue.damageOut;
+		this.player2.characters.rogue.totalDamageIn = gameState.player2Data.characterData.rogue.damageIn;
+	}
+
+	toJSON() {
+		return JSON.stringify(this, (key, value) => {
+			if (value !== null) return value
+		}, 2);
 	}
 }
 

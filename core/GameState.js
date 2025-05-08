@@ -11,6 +11,13 @@ class GameState {
 
 	constructor(players, directorActionInterval, actionExecutionInterval) {
 
+		//Singleton
+		if (GameState.instance) {
+			return GameState.instance;
+		} else {
+			GameState.instance = this;
+		}
+
 		this.logger = new Logger();
 
 		this.actionQueue = [];
@@ -47,7 +54,8 @@ class GameState {
 					damageInRatio: 0,
 					actionRatio: 0,
 					hpRatio: 0,
-					damageIn: 0
+					damageIn: 0,
+					stats: {}
 				},
 				warrior: {
 					damageOut: 0,
@@ -56,7 +64,8 @@ class GameState {
 					damageInRatio: 0,
 					actionRatio: 0,
 					hpRatio: 0,
-					damageIn: 0
+					damageIn: 0,
+					stats: {}
 				},
 				priest: {
 					damageOut: 0,
@@ -65,7 +74,8 @@ class GameState {
 					damageInRatio: 0,
 					actionRatio: 0,
 					hpRatio: 0,
-					damageIn: 0
+					damageIn: 0,
+					stats: {}
 				},
 				rogue: {
 					damageOut: 0,
@@ -74,7 +84,8 @@ class GameState {
 					damageInRatio: 0,
 					actionRatio: 0,
 					hpRatio: 0,
-					damageIn: 0
+					damageIn: 0,
+					stats: {}
 				}
 			}
 		};
@@ -95,7 +106,8 @@ class GameState {
 					damageInRatio: 0,
 					actionRatio: 0,
 					hpRatio: 0,
-					damageIn: 0
+					damageIn: 0,
+					stats: {}
 				},
 				warrior: {
 					damageOut: 0,
@@ -104,7 +116,8 @@ class GameState {
 					damageInRatio: 0,
 					actionRatio: 0,
 					hpRatio: 0,
-					damageIn: 0
+					damageIn: 0,
+					stats: {}
 				},
 				priest: {
 					damageOut: 0,
@@ -113,7 +126,8 @@ class GameState {
 					damageInRatio: 0,
 					actionRatio: 0,
 					hpRatio: 0,
-					damageIn: 0
+					damageIn: 0,
+					stats: {}
 				},
 				rogue: {
 					damageOut: 0,
@@ -122,13 +136,14 @@ class GameState {
 					damageInRatio: 0,
 					actionRatio: 0,
 					hpRatio: 0,
-					damageIn: 0
+					damageIn: 0,
+					stats: {}
 				}
 			}
 		}
 	}
 
-	initPlayer1Data(totalHP) {
+	initPlayer1Data(totalHP, characters) {
 		this.player1Data.totalHP = totalHP;
 		this.player1Data.currentHP = totalHP;
 		this.player1Data.prevCurrentHP = totalHP;
@@ -140,23 +155,85 @@ class GameState {
 		this.player1Data.characterData.priest.hpRatio = 1;
 		this.player1Data.characterData.rogue.hpRatio = 1;
 
+		//Set initial character stats
+		for (let character of characters) {
+			switch (character.name) {
+				case Constants.WARRIOR_NAME:
+					{
+						this.player1Data.characterData.warrior.stats = character.stats;
+						break;
+					}
+				case Constants.MAGE_NAME:
+					{
+						this.player1Data.characterData.mage.stats = character.stats;
+						break;
+					}
+				case Constants.PRIEST_NAME:
+					{
+						this.player1Data.characterData.priest.stats = character.stats;
+						break;
+					}
+				case Constants.ROGUE_NAME:
+					{
+						this.player1Data.characterData.rogue.stats = character.stats;
+						break;
+					}
+				default:
+					{
+						this.logger.logError("GameState - initPlayer1Data: Incorrect name of character when setting stats!");
+						break;
+					}
+			}
+		}
+
 		//manage global HP tracking
 		this.totalHP += totalHP;
 		this.currentHP += totalHP;
 		this.prevCurrentHP += totalHP;
 	}
 
-	initPlayer2Data(totalHP) {
+	initPlayer2Data(totalHP, characters) {
 		this.player2Data.totalHP = totalHP;
 		this.player2Data.currentHP = totalHP;
 		this.player2Data.prevCurrentHP = totalHP;
-		this.player2Data.hpRatio = this.player1Data.currentHP / this.player1Data.totalHP;
+		this.player2Data.hpRatio = this.player2Data.currentHP / this.player2Data.totalHP;
 
 		//All characters start with full HP.
 		this.player2Data.characterData.warrior.hpRatio = 1;
 		this.player2Data.characterData.mage.hpRatio = 1;
 		this.player2Data.characterData.priest.hpRatio = 1;
 		this.player2Data.characterData.rogue.hpRatio = 1;
+
+		//Set initial character stats
+		for (let character of characters) {
+			switch (character.name) {
+				case Constants.WARRIOR_NAME:
+					{
+						this.player2Data.characterData.warrior.stats = character.stats;
+						break;
+					}
+				case Constants.MAGE_NAME:
+					{
+						this.player2Data.characterData.mage.stats = character.stats;
+						break;
+					}
+				case Constants.PRIEST_NAME:
+					{
+						this.player2Data.characterData.priest.stats = character.stats;
+						break;
+					}
+				case Constants.ROGUE_NAME:
+					{
+						this.player2Data.characterData.rogue.stats = character.stats;
+						break;
+					}
+				default:
+					{
+						this.logger.logError("GameState - initPlayer2Data: Incorrect name of character when setting stats!");
+						break;
+					}
+			}
+		}
 
 		//manage globalHP tracking
 		this.totalHP += totalHP;
@@ -170,12 +247,13 @@ class GameState {
 		let currentHP = 0;
 		let hpRatio = 0;
 
-		for(let character of player.characters){
+		for (let character of player.characters) {
 			totalHP += character.baseStats.HP;
 			currentHP += character.stats.currentHP;
+			this.player1Data.characterData[character.name].stats = character.stats;
 		}
 
-		hpRatio = currentHP/totalHP;
+		hpRatio = currentHP / totalHP;
 
 		this.player1Data.totalHP = totalHP;
 		this.player1Data.prevCurrentHP = prevCurrentHP;
@@ -190,12 +268,14 @@ class GameState {
 		let currentHP = 0;
 		let hpRatio = 0;
 
-		for(let character of player.characters){
+		for (let character of player.characters) {
 			totalHP += character.baseStats.HP;
 			currentHP += character.stats.currentHP;
+			this.player2Data.characterData[character.name].stats = character.stats;
+
 		}
 
-		hpRatio = currentHP/totalHP;
+		hpRatio = currentHP / totalHP;
 
 		this.player2Data.totalHP = totalHP;
 		this.player2Data.prevCurrentHP = prevCurrentHP;

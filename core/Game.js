@@ -5,6 +5,8 @@
  * - Method for "RemoveDeadCharactersFromQueue"
  * - Method for "ExecuteDirectorAction" - simplify process turn logic
  * - Method for "ExecuteAction" - simplify process turn logic
+ * - "ExecuteAction" should live in Action class, take gameState as parameter (?)
+ * - "UpdateCharacterStat" should live in character class
  * 
  * TODO - FEATURES:
  * - Add separate queue for director actions?
@@ -21,8 +23,8 @@ const CharacterActionLog = require('../logging/CharacterActionLog');
 const CharacterActionOutcomeLog = require('../logging/CharacterActionOutcomeLog');
 const DirectorActionOutcomeLog = require('../logging/DirectorActionOutcomeLog');
 const Action = require('./Action');
-const DirectorActionLog = require('../logging/DirectorActionLog');
 const ActionQueueLog = require('../logging/ActionQueueLog');
+const EndLog = require('../logging/EndLog');
 
 class Game {
     constructor(players, aiDirector, directorActionInterval = Constants.DIRECTOR_ACTION_INTERVAL, actionExecutionInterval = Constants.ACTION_EXECUTION_INTERVAL) {
@@ -36,6 +38,9 @@ class Game {
         //Logging for game
         this.logger = new Logger();
 
+        let player1 = {};
+        let player2 = {};
+
         //Set initial HP counts for logging/gamestate
         let player1TotalHP = 0;
         let player2TotalHP = 0;
@@ -43,8 +48,10 @@ class Game {
             for (let character of player.characters) {
                 if (player.playerNumber == 1) {
                     player1TotalHP += character.stats.HP;
+                    player1 = player;
                 } else {
                     player2TotalHP += character.stats.HP;
+                    player2 = player;
                 }
             }
         }
@@ -69,10 +76,12 @@ class Game {
         }
 
         //set initial gamestate for players
-        this.gameState.initPlayer1Data(player1TotalHP);
-        this.gameState.initPlayer2Data(player2TotalHP);
+        console.log(player1.characters);
+        this.gameState.initPlayer1Data(player1TotalHP, player1.characters);
+        this.gameState.initPlayer2Data(player2TotalHP, player2.characters);
 
         //add initial state for action to HP data
+        //TODO: Make game object for this.
         this.gameState.actionCurrHPData.push([
             this.gameState.totalPlayerActions,
             this.gameState.player1Data.currentHP,
@@ -127,8 +136,10 @@ class Game {
         while (this.gameState.actionQueue.length > 0 && this.gameState.timeStep - this.gameState.actionQueue[0].timeStepQueued >= this.actionExecutionInterval) {
             let action = this.gameState.actionQueue.shift();
 
+            //TODO: Clean up this if statement with a better checking method
             if (action.type != 'buff' || action.type != 'nerf' || action.type != 'heal' || action.type != 'damage') {
-                this.executeAction(action, timeStepLog); // Handle character actions
+                let actionLog = this.executeAction(action);
+                timeStepLog.actionsExecuted.push(actionLog); // Handle character actions, push details to log
                 const currentTotalHP = this.gameState.player1Data.currentHP + this.gameState.player2Data.currentHP;
                 this.gameState.actionCurrHPData.push([
                     this.gameState.totalPlayerActions,
@@ -152,7 +163,8 @@ class Game {
 
             if (directorActions) {
                 for (let action of directorActions) {
-                    this.executeAIDirectorAction(action, timeStepLog);
+                    let directorActionLog = this.executeAIDirectorAction(action);
+                    timeStepLog.directorActions.push(directorActionLog); //Handle director actions, push details to log
                 }
             }
         }
@@ -169,18 +181,8 @@ class Game {
 
         this.gameState.updateTotalHP(this.players);
 
-        //Update player logs
-
-        //Add player data to log
-        for (let player of this.players) {
-            let playerNumber = player.playerNumber;
-            for (let character of player.characters) {
-
-            }
-        }
-
-        //log actionsInQueue, post execution
-        timeStepLog.actionsInQueue = new ActionQueueLog(this.gameState.actionQueue);
+        //update time step log from gamestate
+        timeStepLog.updateLogFromGameState(this.gameState);
 
         // Push the time step log to the main log array
         this.logger.logTimeStep(timeStepLog);
@@ -205,6 +207,10 @@ class Game {
     checkGameOver() {
         for (let player of this.players) {
             if (player.characters.every(c => !c.isAlive())) {
+                //make final log
+                this.logger.logEnd(new EndLog(this.gameState, player.playerNumber));
+                //output relevant logs to file
+                this.logger.writeLogToFile();
                 return player.playerNumber; // Return the player number who lost
             }
         }
@@ -241,9 +247,9 @@ class Game {
      * @param {Action} The action to be performed.
      * @returns {CharacterActionOutcomeLog} Details on if the action was successful.
      * */
-    executeAction(action, timeStepLog) {
+    executeAction(action) {
 
-        let characterActionOutcomeLog = new CharacterActionOutcomeLog(action);
+        let characterActionOutcomeLog = new CharacterActionOutcomeLog(action, this.gameState.timeStep);
 
 
         // If this character is currently defending, stop
@@ -362,64 +368,34 @@ class Game {
 
     /** Executes an AI Director Action and returns a log detailing outcomes. */
     executeAIDirectorAction(action) {
-        let {
-            type,
-            targets,
-            stats,
-            amount,
-            playerNum
-        } = action;
-        let actionMessage = `AI Director: is using ${type}. `;
+        let actionMessage = `Game - executeAIDirectorAction: Director is applying ${action.type}. `;
 
-        //I can refactor/consolidate this.
-        if (type === 'buff') {
-            for (let target of targets) {
-                for (let stat of stats) {
+        //TODO: Move update stats to character class.
+        if (action.type === 'buff' || action.type === 'nerf') {
+            for (let target of action.characterTargets) {
+                for (let stat of action.stats) {
                     switch (target.name) {
                         case 'warrior':
-                            this.updateWarriorStat(target, stat, amount);
+                            this.updateWarriorStat(target, stat, action.statChange);
                             break;
                         case 'mage':
-                            this.updateMageStat(target, stat, amount);
+                            this.updateMageStat(target, stat, action.statChange);
                             break;
                         case 'priest':
-                            this.updatePriestStat(target, stat, amount);
+                            this.updatePriestStat(target, stat, action.statChange);
                             break;
                         case 'rogue':
-                            this.updateRogueStat(target, stat, amount);
+                            this.updateRogueStat(target, stat, action.statChange);
                             break;
                         default:
-                            this.logger.logError(`AI Director: No valid target/stat to buff. Attempted to ${type} ${stat}`);
+                            this.logger.logError(`Game - executeAIDirectorAction: No valid target/stat to ${action.type}. Attempted to ${action.type} ${stat}`);
                             break;
                     }
-                    actionMessage += ` ${type} player ${target.playerNumber}'s ${target.name}'s ${stat} by ${amount}. New value: ${target.stats[stat]}`;
+                    actionMessage += ` ${action.type} player ${target.playerNumber}'s ${target.name}'s ${stat} by ${action.statChange}. New value: ${target.stats[stat]}`;
                 }
             }
-        } else if (type === 'nerf') {
-            for (let target of targets) {
-                for (let stat of stats) {
-                    switch (target.name) {
-                        //TODO: am I going to have this  
-                        case 'warrior':
-                            this.updateWarriorStat(target, stat, amount);
-                            break;
-                        case 'mage':
-                            this.updateMageStat(target, stat, amount);
-                            break;
-                        case 'priest':
-                            this.updatePriestStat(target, stat, amount);
-                            break;
-                        case 'rogue':
-                            this.updateRogueStat(target, stat, amount);
-                            break;
-                        default:
-                            this.logger.logError(`AI Director: No valid target/stat to buff. Attempted to ${type} ${stat}`);
-                            break;
-                    }
-                    actionMessage += ` ${type} player ${target.playerNumber}'s ${target.name}'s ${stat} by ${amount}. New value: ${target.stats[stat]}`;
-                }
-            }
-            //TODO
+
+        //TODO - ADDITIONAL DIRECTOR ACTIONS
         } else if (type === 'heal') {
             for (let target of targets) {
                 //TODO: refactor out
@@ -439,20 +415,8 @@ class Game {
         //Log action
         this.logger.logAction(actionMessage);
 
-
-
-        // Log the executed action for this step
-        const actionDetails = {
-            player: 'AI Director',
-            character: targets,
-            actionType: type,
-            playerNum: playerNum,
-            statChanged: stats,
-            amountChanged: amount
-        };
-
-        //
-        //stepLog.actionsExecuted.push(actionDetails);
+        //return execution details
+        return new DirectorActionOutcomeLog(action, this.gameState.timeStep);
     }
 
     runSimulation(maxSteps = Infinity) {
@@ -460,6 +424,7 @@ class Game {
         while (!winner && this.gameState.timeStep < maxSteps) {
             this.processTurn();
             winner = this.checkGameOver();
+            this.logger.logEnd(new EndLog(this.gameState, winner)); 
         }
         console.log("Game Over");
         if (winner) {

@@ -3,20 +3,25 @@
  * 
  * */
 
+const fs = require('node:fs');
+
 const InitialLog = require('./InitialLog');
+const EndLog = require('./EndLog');
 const Constants = require('../utils/Constants');
 
 
 class Logger {
 
 	constructor() {
-
 		//singleton for easy access
 		if (Logger.instance) {
 			return Logger.instance;
+		} else {
+			Logger.instance = this;
 		}
 
-		Logger.instance = this;
+		this.outputDirectory = "";
+
 
 		//gameState for wrapping messaging
 		this.gameState = {};
@@ -63,6 +68,32 @@ class Logger {
 	logEnd(endLog) {
 		this.endLog = endLog;
 	}
+
+	writeLogToFile() {
+
+		const filePath = path.join(this.outputDirectory, `${Constants.RNG_SEED}.json`);
+		const outputLog = this.completeLogToJSONString;
+
+		try {
+			fs.writeFileSync(filePath, outputLog);
+		} catch (err) {
+			this.logError("Logger - writeLogToFile: Issue writing file! " + err);
+		}
+	}
+
+	completeLogToJSONString() {
+		let completeLog = {
+			"initialLog": this.initialLog,
+			"timeStepLogs": this.timeStepLog,
+			"endLog": this.endLog
+		};
+
+		return JSON.stringify(completeLog, (key, value) => {
+			if (value !== null) return value
+		}, 2);
+	}
+
+
 }
 
 module.exports = Logger;

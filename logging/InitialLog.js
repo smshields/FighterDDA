@@ -23,11 +23,16 @@ class InitialLog {
 		this.statFuzziness = Constants.STAT_FUZZINESS;
 	}
 
-	initInitialLog(player1TotalHP, player2TotalHP){
+	initInitialLog(player1TotalHP, player2TotalHP) {
 		this.player1TotalHP = player1TotalHP;
 		this.player2TotalHP = player2TotalHP;
 		this.totalHP = this.player1TotalHP + this.player2TotalHP;
+	}
 
+	toJSON() {
+		return JSON.stringify(this, (key, value) => {
+			if (value !== null) return value
+		}, 2);
 	}
 }
 

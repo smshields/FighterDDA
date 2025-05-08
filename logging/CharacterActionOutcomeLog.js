@@ -4,7 +4,8 @@ const ActionTargetLog = require('./ActionTargetLog');
 
 class CharacterActionOutcomeLog {
 
-	constructor(action) {
+	constructor(action, timeStep) {
+		this.timeStep = timeStep;
 
 		this.controller = action.actor.playerNumber;
 		this.characterName = action.actor.name;
@@ -17,15 +18,9 @@ class CharacterActionOutcomeLog {
 
         this.defenseBoostReset = false;
 
-        //for each target, need HP change, 
-
+        //for each target, need HP change or stat change, if it was defeated
         this.targetOutcomes = [];
 
-        this.targetsPreviousHP = {};
-        this.targetsCurrentHP = {};
-        this.targetsDamageReceived = {};
-
-        this.controllerTotalDamageDealt = 0;
 	}
 
 	/** Sets a boolean indicating if defense has been reset or not. 

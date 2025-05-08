@@ -1,4 +1,4 @@
-/** Contains all information needed for performing an action.
+/** Contains all information needed for performing a character action.
  * TODO - REFACTOR:
  * - Put type as top-level attribute (?)
  * */
