@@ -8,9 +8,9 @@ class DirectorTargetOutcomeLog {
 		this.previousStats = {};
 		this.newStats = {};
 
-		for(let stat of action.statsChanged){
-			previousStats[stat] = target.stats[stat] - action.statChange;
-			newStats[stat] = target.stats[stat];
+		for(let stat of action.stats){
+			this.previousStats[stat] = target.stats[stat] - action.statChange;
+			this.newStats[stat] = target.stats[stat];
 		}
 	}
 

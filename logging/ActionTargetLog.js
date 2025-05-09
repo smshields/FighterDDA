@@ -6,7 +6,12 @@ class ActionTargetLog{
 
     }
 
-    toJSON(){}
+    toJSON(){
+        return {
+            controller: this.controller,
+            targetName: this.targetName
+        };
+    }
 }
 
 module.exports = ActionTargetLog;

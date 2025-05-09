@@ -484,6 +484,7 @@ class AIDirector {
         }
 
         let playerNum = player.playerNumber;
+        let stats = ['Defense', 'MagicDefense'];
         let type = "";
         if (statChange >= 0) {
             type = "buff";
@@ -491,15 +492,7 @@ class AIDirector {
             type = "nerf";
         }
 
-        let directorAction = {
-            type: type,
-            targets: playerLivingCharacters,
-            stats: ['Defense', 'MagicDefense'],
-            amount: statChange / 2,
-            playerNum: playerNum
-        }
-
-        return directorAction;
+        return new DirectorAction(type, playerNum, playerLivingCharacters, stats, statChange);
     }
 
 

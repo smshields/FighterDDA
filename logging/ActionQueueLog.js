@@ -20,7 +20,14 @@ class ActionQueueLog {
                 this.logger.logError("ActionQueueLog - constructor: Unexpectedly logged director action from actionQueue!");
             }
         }
+    }
 
+    toJSON(){
+        let jsonLog = [];
+        for(let action of this.actionQueueLog){
+            jsonLog.push(action.toJSON());
+        }
+        return jsonLog;
     }
 
 

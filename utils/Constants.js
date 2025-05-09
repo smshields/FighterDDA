@@ -10,7 +10,7 @@
  * */
 class Constants {
 
-    static RNG_SEED = Math.random(); //Seed for reproduction
+    static RNG_SEED = null; //Seed for reproduction
     static OUTPUT_DIRECTORY = './output';
 
     //Logging Setup
@@ -28,7 +28,7 @@ class Constants {
     static CLAMP_STAT_CHANGE = false; //allows us to clamp how much something is buffed/nerfed
     static MAX_BUFF_AMOUNT = 30; //clamps maximum buff
     static MAX_NERF_AMOUNT = 30; //clamps minimum buff
-    static DIRECTOR_CHANGE_SCALAR = 0.25;
+    static DIRECTOR_CHANGE_SCALAR = 0.5;
 
     //Player AI Configuration
     static DEFAULT_PLAYER_AI = 'optimal'; //determines AI of player if not specified
@@ -192,6 +192,10 @@ class Constants {
     static ROGUE_LUCK_MIN = 50;
     static ROGUE_LUCK_MAX = 100;
     static ROGUE_LUCK_BASE = 80;
+
+    static generateNewSeed(){
+        this.RNG_SEED = Math.random();
+    }
 
 
 

@@ -12,7 +12,7 @@ class DirectorActionOutcomeLog{
 		this.targets = [];
 
 		for(let character of action.characterTargets){
-			this.targets.push(new DirectorTargetOutcomeLog(action, character));
+			this.targets.push(new DirectorTargetOutcomeLog(character, action));
 		}
 	}
 }

@@ -27,7 +27,15 @@ const ActionQueueLog = require('../logging/ActionQueueLog');
 const EndLog = require('../logging/EndLog');
 
 class Game {
-    constructor(players, aiDirector, directorActionInterval = Constants.DIRECTOR_ACTION_INTERVAL, actionExecutionInterval = Constants.ACTION_EXECUTION_INTERVAL) {
+    constructor(players, aiDirector, directorActionInterval = Constants.DIRECTOR_ACTION_INTERVAL, actionExecutionInterval = Constants.ACTION_EXECUTION_INTERVAL, seed) {
+
+        if (seed) {
+            Constants.RNG_SEED = seed;
+        } else {
+            Constants.generateNewSeed();
+        }
+
+
 
         this.players = players;
         this.aiDirector = aiDirector;
@@ -56,6 +64,8 @@ class Game {
             }
         }
 
+        console.log(this.players[0].characters);
+
         //update initial logging with HP counts
         this.logger.initialLog.initInitialLog(player1TotalHP, player2TotalHP);
 
@@ -76,7 +86,6 @@ class Game {
         }
 
         //set initial gamestate for players
-        console.log(player1.characters);
         this.gameState.initPlayer1Data(player1TotalHP, player1.characters);
         this.gameState.initPlayer2Data(player2TotalHP, player2.characters);
 
@@ -207,10 +216,6 @@ class Game {
     checkGameOver() {
         for (let player of this.players) {
             if (player.characters.every(c => !c.isAlive())) {
-                //make final log
-                this.logger.logEnd(new EndLog(this.gameState, player.playerNumber));
-                //output relevant logs to file
-                this.logger.writeLogToFile();
                 return player.playerNumber; // Return the player number who lost
             }
         }
@@ -395,15 +400,15 @@ class Game {
                 }
             }
 
-        //TODO - ADDITIONAL DIRECTOR ACTIONS
-        } else if (type === 'heal') {
+            //TODO - ADDITIONAL DIRECTOR ACTIONS
+        } else if (action.type === 'heal') {
             for (let target of targets) {
                 //TODO: refactor out
                 target.stats['currentHP'] += amount;
                 target.stats['currentHP'] = Math.min(target.baseStats['HP'], target.stats['currentHP']);
                 actionMessage += ` healing 'currentHP' by ${amount}. New value: ${target.stats['currentHP']}`;
             }
-        } else if (type === 'damage') {
+        } else if (action.type === 'damage') {
             //TODO: refactor out
             for (let target of targets) {
                 target.stats['currentHP'] -= amount;
@@ -420,36 +425,32 @@ class Game {
     }
 
     runSimulation(maxSteps = Infinity) {
-        let winner = null;
-        while (!winner && this.gameState.timeStep < maxSteps) {
+        let loser = null;
+        while (!loser && this.gameState.timeStep < maxSteps) {
             this.processTurn();
-            winner = this.checkGameOver();
-            this.logger.logEnd(new EndLog(this.gameState, winner)); 
+            loser = this.checkGameOver();
         }
-        console.log("Game Over");
-        if (winner) {
-            console.log(`Player ${winner} lost!`);
-        } else {
-            console.log("Game ended due to max steps.");
+
+        //update end of game log
+        this.logger.logEnd(new EndLog(this.gameState, loser));
+
+        //write logs to output directory
+        this.logger.writeLogToFile();
+
+        let results = {
+            loser: loser,
+            totalTimeSteps: this.gameState.timeStep,
+            totalActions: this.gameState.totalPlayerActions
         }
-        console.log(this.gameState.totalPlayerActions);
-        this.outputLog(); // Output the log at the end of the simulation
+
+        //TODO - this is so ugly...
+        //cleanup singletons
+        this.gameState.deleteSingletonInstance();
+        this.logger.deleteSingletonInstance();
+
+        return results;
+
     }
-
-
-
-    outputLog() {
-        console.log("PAUSING LOGS... TODO");
-        // const jsonLog = JSON.stringify(this.log, null, 2);
-        // const fileName = `simulation_log_${Date.now()}.json`;
-        // const filePath = path.join(this.logDirectory, fileName); // Use the log directory
-
-        // console.log(`Saving log to: ${filePath}`);
-
-        // // Save the log to a file using fs.writeFileSync(fileName, jsonLog);
-        // fs.writeFileSync(filePath, jsonLog);
-    }
-
 
     //TODO: Move these to AIDirector class.
     updateMageStat(target, stat, change) {

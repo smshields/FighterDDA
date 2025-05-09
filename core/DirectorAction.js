@@ -11,6 +11,7 @@ class DirectorAction{
 
 	constructor(type, playerTarget, characterTargets, stats, statChange){
 		this.actor = "AI Director";
+		this.type = type;
 		this.playerTarget = playerTarget;
 		this.characterTargets = characterTargets;
 		this.stats = stats;

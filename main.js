@@ -12,89 +12,110 @@ const TeamFactory = require('./core/TeamFactory');
 
 // New function to run repeated simulations
 function runRepeatedSimulations(
-        numSimulations = 1,
-        aiDirector = new AIDirector('difficulty'),
-        seed = 1234,
-        directorActionInterval = 3,
-        actionExecutionInterval = 3
-    ) {
-        let player1Wins = 0;
-        let player2Wins = 0;
-        let totalTimeSteps = 0;
-        let totalActions = 0;
+    numSimulations = 1,
+    aiDirector = new AIDirector('difficulty'),
+    seed = 1234,
+    directorActionInterval = 3,
+    actionExecutionInterval = 3
+) {
+    let player1Wins = 0;
+    let player2Wins = 0;
+    let totalTimeSteps = 0;
+    let totalActions = 0;
 
-        // Create the main directory with timestamp
-        const mainDirectory = path.join(Constants.OUTPUT_DIRECTORY, `${Date.now()}`);
+    // Create the main directory with timestamp
+    const mainDirectory = path.join(Constants.OUTPUT_DIRECTORY, `${Date.now()}`);
 
-            try {
-                if (!fs.existsSync(mainDirectory)) {
-                    fs.mkdirSync(mainDirectory);
-                }
-            } catch (err) {
-                console.log("Main - runRepeatedSimulations: Issue making output directory!" + err);
+    try {
+        if (!fs.existsSync(mainDirectory)) {
+            fs.mkdirSync(mainDirectory);
+        }
+    } catch (err) {
+        console.log("Main - runRepeatedSimulations: Issue making output directory!" + err);
+    }
+
+    for (let i = 0; i < numSimulations; i++) {
+        // Create subdirectory for each simulation
+        const simulationDirectory = path.join(mainDirectory, `simulation_${i + 1}`);
+
+        try {
+            if (!fs.existsSync(simulationDirectory)) {
+                fs.mkdirSync(simulationDirectory);
             }
+        } catch (err) {
+            console.log("Main - runRepeatedSimulations: Issue making output directory!" + err);
+        }
 
-            for (let i = 0; i < numSimulations; i++) {
-                // Create subdirectory for each simulation
-                const simulationDirectory = path.join(mainDirectory, `simulation_${i + 1}`);
+        // Create players with AIPlayer methods
+        const team1 = new AIPlayer(1, teamFactory.createTeam(1).characters, 'optimal', 0.3);
+        const team2 = new AIPlayer(2, teamFactory.createTeam(2).characters, 'optimal', 0.3);
 
-                try {
-                    if (!fs.existsSync(simulationDirectory)) {
-                        fs.mkdirSync(simulationDirectory);
-                    }
-                } catch (err) {
-                    console.log("Main - runRepeatedSimulations: Issue making output directory!" + err);
-                }
+        team1.characters.forEach(character => character.player = team1);
+        team2.characters.forEach(character => character.player = team2);
 
-                // Create players with AIPlayer methods
-                const team1 = new AIPlayer(1, teamFactory.createTeam(1).characters, 'optimal', 0.3);
-                const team2 = new AIPlayer(2, teamFactory.createTeam(2).characters, 'optimal', 0.3);
+        const game = new Game([team1, team2], aiDirector, directorActionInterval, actionExecutionInterval);
+        game.logger.outputDirectory = simulationDirectory;
+        const results = game.runSimulation();
 
-                team1.characters.forEach(character => character.player = team1);
-                team2.characters.forEach(character => character.player = team2);
 
-                const game = new Game([team1, team2], aiDirector, directorActionInterval, actionExecutionInterval);
-                game.logger.outputDirectory = simulationDirectory;
-                game.runSimulation();
+        totalTimeSteps += results.totalTimeSteps;
+        totalActions += results.totalActions;
+        let winner = "";
 
-                const winner = game.checkGameOver();
+        if (results.loser === 1) {
+            winner = 2;
+            player2Wins++; //Player 2 causes player 1 to lose.
+        } else if (results.loser === 2) {
+            winner = 1;
+            player1Wins++; //Player 1 causes player 2 to lose.
+        }
 
-                totalTimeSteps += game.gameState.timeStep;
-                totalActions += game.gameState.totalPlayerActions;
+        console.log(`****************************************`);
+        console.log(`************** GAME OVER! **************`);
+        console.log(`****************************************`);
 
-                if (winner === 1) {
-                    player2Wins++; //Player 2 causes player 1 to lose.
-                } else if (winner === 2) {
-                    player1Wins++; //Player 1 causes player 2 to lose.
-                }
-            }
+        console.log(`Player ${winner} is the winner!`);
+        console.log(`Total Actions: ${results.totalActions}`);
+        console.log(`Total Time Steps: ${results.totalTimeSteps}`);
 
-            //TODO: Global logging to file capabilities
-            const player1WinRate = (player1Wins / numSimulations) * 100;
-            const player2WinRate = (player2Wins / numSimulations) * 100;
-            const averageTimeSteps = totalTimeSteps / numSimulations;
-            const averageActions = totalActions / numSimulations;
+        console.log(`****************************************`);
+        console.log(`************** NEW GAME!! **************`);
+        console.log(`****************************************`);
 
-            console.log(`\n--- Simulation Results ---`); console.log(`Number of Simulations: ${numSimulations}`); console.log(`Player 1 Win Rate: ${player1WinRate.toFixed(2)}%`); console.log(`Player 2 Win Rate: ${player2WinRate.toFixed(2)}%`); console.log(`Average Simulation Length: ${averageTimeSteps.toFixed(2)}`); console.log(`Average Number of Actions: ${averageActions.toFixed(2)}`);
-        };
+        delete game;
+    }
 
-        const teamFactory = new TeamFactory();
+    //TODO: Global logging to file capabilities
+    const player1WinRate = (player1Wins / numSimulations) * 100;
+    const player2WinRate = (player2Wins / numSimulations) * 100;
+    const averageTimeSteps = totalTimeSteps / numSimulations;
+    const averageActions = totalActions / numSimulations;
 
-        const team1 = teamFactory.createTeam(1);
-        const team2 = teamFactory.createTeam(2);
+    console.log(`\n--- Simulation Results ---`);
+    console.log(`Number of Simulations: ${numSimulations}`);
+    console.log(`Player 1 Win Rate: ${player1WinRate.toFixed(2)}%`);
+    console.log(`Player 2 Win Rate: ${player2WinRate.toFixed(2)}%`);
+    console.log(`Average Simulation Length: ${averageTimeSteps.toFixed(2)}`);
+    console.log(`Average Number of Actions: ${averageActions.toFixed(2)}`);
+};
 
-        //Create players with AIPlayer methods
-        const agent1 = new AIPlayer(1, team1.characters, 'optimal', 0.3);
-        const agent2 = new AIPlayer(2, team2.characters, 'optimal', 0.3);
+const teamFactory = new TeamFactory();
 
-        //TODO: Fix circular reference...
-        agent1.characters.forEach(character => character.player = agent1);
-        agent2.characters.forEach(character => character.player = agent2);
+const team1 = teamFactory.createTeam(1);
+const team2 = teamFactory.createTeam(2);
 
-        // // For a simulation *with* the AI director, pass in `new AIDirector()`
-        // // For a simulation *without* the AI director, pass in `null`
-        //const game = new Game([agent1, agent2], new AIDirector('difficulty'), Constants.DIRECTOR_ACTION_INTERVAL, Constants.ACTION_EXECUTION_INTERVAL);
-        //game.runSimulation();
+//Create players with AIPlayer methods
+const agent1 = new AIPlayer(1, team1.characters, 'optimal', 0.3);
+const agent2 = new AIPlayer(2, team2.characters, 'optimal', 0.3);
 
-        // Run repeated simulations
-        runRepeatedSimulations(100, new AIDirector('difficulty'), 1234, 20, 3);
+//TODO: Fix circular reference...
+agent1.characters.forEach(character => character.player = agent1);
+agent2.characters.forEach(character => character.player = agent2);
+
+// // For a simulation *with* the AI director, pass in `new AIDirector()`
+// // For a simulation *without* the AI director, pass in `null`
+//const game = new Game([agent1, agent2], new AIDirector('difficulty'), Constants.DIRECTOR_ACTION_INTERVAL, Constants.ACTION_EXECUTION_INTERVAL);
+//game.runSimulation();
+
+// Run repeated simulations
+runRepeatedSimulations(100, new AIDirector('difficulty'), 1234, 20, 3);
