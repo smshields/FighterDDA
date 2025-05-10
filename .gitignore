@@ -1,5 +1,7 @@
 # Game Output Ignore
 output/*
+#ensure directory is included
+!output/.gitkeep
 
 # Logs
 logs
