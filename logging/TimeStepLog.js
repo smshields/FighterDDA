@@ -96,22 +96,22 @@ class TimeStepLog {
         this.player1.totalDamageIn = gameState.player1Data.damageIn;
 
         //Player 1 character details
-        this.player1.characters.warrior.stats = gameState.player1Data.characterData.warrior.stats;
+        this.player1.characters.warrior.stats = structuredClone(gameState.player1Data.characterData.warrior.stats);
         this.player1.characters.warrior.actionsTaken = gameState.player1Data.characterData.warrior.actions;
         this.player1.characters.warrior.totalDamageOut = gameState.player1Data.characterData.warrior.damageOut;
         this.player1.characters.warrior.totalDamageIn = gameState.player1Data.characterData.warrior.damageIn;
 
-        this.player1.characters.mage.stats = gameState.player1Data.characterData.mage.stats;
+        this.player1.characters.mage.stats = structuredClone(gameState.player1Data.characterData.mage.stats);
         this.player1.characters.mage.actionsTaken = gameState.player1Data.characterData.mage.actions;
         this.player1.characters.mage.totalDamageOut = gameState.player1Data.characterData.mage.damageOut;
         this.player1.characters.mage.totalDamageIn = gameState.player1Data.characterData.mage.damageIn;
 
-        this.player1.characters.priest.stats = gameState.player1Data.characterData.priest.stats;
+        this.player1.characters.priest.stats = structuredClone(gameState.player1Data.characterData.priest.stats);
         this.player1.characters.priest.actionsTaken = gameState.player1Data.characterData.priest.actions;
         this.player1.characters.priest.totalDamageOut = gameState.player1Data.characterData.priest.damageOut;
         this.player1.characters.priest.totalDamageIn = gameState.player1Data.characterData.priest.damageIn;
 
-        this.player1.characters.rogue.stats = gameState.player1Data.characterData.rogue.stats;
+        this.player1.characters.rogue.stats = structuredClone(gameState.player1Data.characterData.rogue.stats);
         this.player1.characters.rogue.actionsTaken = gameState.player1Data.characterData.rogue.actions;
         this.player1.characters.rogue.totalDamageOut = gameState.player1Data.characterData.rogue.damageOut;
         this.player1.characters.rogue.totalDamageIn = gameState.player1Data.characterData.rogue.damageIn;
@@ -124,22 +124,22 @@ class TimeStepLog {
         this.player2.totalDamageIn = gameState.player2Data.damageIn;
 
         //Player 2 character details
-        this.player2.characters.warrior.stats = gameState.player2Data.characterData.warrior.stats;
+        this.player2.characters.warrior.stats = structuredClone(gameState.player2Data.characterData.warrior.stats);
         this.player2.characters.warrior.actionsTaken = gameState.player2Data.characterData.warrior.actions;
         this.player2.characters.warrior.totalDamageOut = gameState.player2Data.characterData.warrior.damageOut;
         this.player2.characters.warrior.totalDamageIn = gameState.player2Data.characterData.warrior.damageIn;
 
-        this.player2.characters.mage.stats = gameState.player2Data.characterData.mage.stats;
+        this.player2.characters.mage.stats = structuredClone(gameState.player2Data.characterData.mage.stats);
         this.player2.characters.mage.actionsTaken = gameState.player2Data.characterData.mage.actions;
         this.player2.characters.mage.totalDamageOut = gameState.player2Data.characterData.mage.damageOut;
         this.player2.characters.mage.totalDamageIn = gameState.player2Data.characterData.mage.damageIn;
 
-        this.player2.characters.priest.stats = gameState.player2Data.characterData.priest.stats;
+        this.player2.characters.priest.stats = structuredClone(gameState.player2Data.characterData.priest.stats);
         this.player2.characters.priest.actionsTaken = gameState.player2Data.characterData.priest.actions;
         this.player2.characters.priest.totalDamageOut = gameState.player2Data.characterData.priest.damageOut;
         this.player2.characters.priest.totalDamageIn = gameState.player2Data.characterData.priest.damageIn;
 
-        this.player2.characters.rogue.stats = gameState.player2Data.characterData.rogue.stats;
+        this.player2.characters.rogue.stats = structuredClone(gameState.player2Data.characterData.rogue.stats);
         this.player2.characters.rogue.actionsTaken = gameState.player2Data.characterData.rogue.actions;
         this.player2.characters.rogue.totalDamageOut = gameState.player2Data.characterData.rogue.damageOut;
         this.player2.characters.rogue.totalDamageIn = gameState.player2Data.characterData.rogue.damageIn;

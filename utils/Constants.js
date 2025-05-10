@@ -12,6 +12,7 @@ class Constants {
 
     static RNG_SEED = null; //Seed for reproduction
     static OUTPUT_DIRECTORY = './output';
+    static MAX_GAME_LENGTH_SECONDS = 1800; //Approximation, 1 timeStep is 1 second, 1 Action is 6 seconds, players take actions concurrently so divide by 2
 
     //Logging Setup
     static CONSOLE_LOGGING_ENABLED = true; //Are we logging to console
@@ -24,7 +25,7 @@ class Constants {
     //Director Configuration
     static BALANCE_MODE = 'difficulty'; //determines type of balancing - inclusion/difficulty
     static DIRECTOR_ACTION_INTERVAL = 30; //Number of timeSteps between each director action   
-    static TARGET_ACTIONS = 60; //determines the target amount of actions for difficulty
+    static TARGET_ACTIONS = 120; //determines the target amount of actions for difficulty
     static CLAMP_STAT_CHANGE = false; //allows us to clamp how much something is buffed/nerfed
     static MAX_BUFF_AMOUNT = 30; //clamps maximum buff
     static MAX_NERF_AMOUNT = 30; //clamps minimum buff

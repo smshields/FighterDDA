@@ -217,6 +217,14 @@ class Game {
                 return player.playerNumber; // Return the player number who lost
             }
         }
+
+        //game lasted more than 30 minutes, end and report
+        if(this.gameState.timeStep + (this.gameState.totalPlayerActions*3) >= Constants.MAX_GAME_LENGTH_SECONDS){
+            //TODO: Tiebreaker rules: # of living characters, then remaining HP ratio, then coin flip
+            return -1;
+        }
+
+
         return null; // No player has lost yet
     }
 
@@ -447,7 +455,6 @@ class Game {
         this.logger.deleteSingletonInstance();
 
         return results;
-
     }
 
     //TODO: Move these to AIDirector class.

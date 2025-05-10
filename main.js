@@ -20,6 +20,7 @@ function runRepeatedSimulations(
 ) {
     let player1Wins = 0;
     let player2Wins = 0;
+    let totalDraws = 0;
     let totalTimeSteps = 0;
     let totalActions = 0;
 
@@ -60,6 +61,7 @@ function runRepeatedSimulations(
 
         totalTimeSteps += results.totalTimeSteps;
         totalActions += results.totalActions;
+
         let winner = "";
 
         if (results.loser === 1) {
@@ -68,13 +70,16 @@ function runRepeatedSimulations(
         } else if (results.loser === 2) {
             winner = 1;
             player1Wins++; //Player 1 causes player 2 to lose.
+        } else {
+            winner = "No one";
+            totalDraws++;
         }
 
         console.log(`****************************************`);
         console.log(`************** GAME OVER! **************`);
         console.log(`****************************************`);
 
-        console.log(`Player ${winner} is the winner!`);
+        console.log(`${winner} is the winning Player!`);
         console.log(`Total Actions: ${results.totalActions}`);
         console.log(`Total Time Steps: ${results.totalTimeSteps}`);
 
@@ -88,13 +93,17 @@ function runRepeatedSimulations(
     //TODO: Global logging to file capabilities
     const player1WinRate = (player1Wins / numSimulations) * 100;
     const player2WinRate = (player2Wins / numSimulations) * 100;
+    const drawRatio = totalDraws / numSimulations;
     const averageTimeSteps = totalTimeSteps / numSimulations;
     const averageActions = totalActions / numSimulations;
 
-    console.log(`\n--- Simulation Results ---`);
+    console.log(`****************************************`);
+    console.log(`********** SIMULATION RESULTS **********`);
+    console.log(`****************************************`);
     console.log(`Number of Simulations: ${numSimulations}`);
     console.log(`Player 1 Win Rate: ${player1WinRate.toFixed(2)}%`);
     console.log(`Player 2 Win Rate: ${player2WinRate.toFixed(2)}%`);
+    console.log(`Draw to Simulation Ratio: ${drawRatio.toFixed(2)}`);
     console.log(`Average Simulation Length: ${averageTimeSteps.toFixed(2)}`);
     console.log(`Average Number of Actions: ${averageActions.toFixed(2)}`);
 };
