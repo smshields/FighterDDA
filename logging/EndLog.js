@@ -1,4 +1,4 @@
-class EndLog {
+ class EndLog {
 
     constructor(gameState, loser) {
         this.loser = loser;

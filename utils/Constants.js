@@ -24,11 +24,11 @@ class Constants {
     //Director Configuration
     static BALANCE_MODE = 'difficulty'; //determines type of balancing - inclusion/difficulty
     static DIRECTOR_ACTION_INTERVAL = 30; //Number of timeSteps between each director action   
-    static TARGET_ACTIONS = 100; //determines the target amount of actions for difficulty
+    static TARGET_ACTIONS = 60; //determines the target amount of actions for difficulty
     static CLAMP_STAT_CHANGE = false; //allows us to clamp how much something is buffed/nerfed
     static MAX_BUFF_AMOUNT = 30; //clamps maximum buff
     static MAX_NERF_AMOUNT = 30; //clamps minimum buff
-    static DIRECTOR_CHANGE_SCALAR = 0.5;
+    static DIRECTOR_CHANGE_SCALAR = 0.25;
 
     //Player AI Configuration
     static DEFAULT_PLAYER_AI = 'optimal'; //determines AI of player if not specified

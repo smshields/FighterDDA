@@ -64,8 +64,6 @@ class Game {
             }
         }
 
-        console.log(this.players[0].characters);
-
         //update initial logging with HP counts
         this.logger.initialLog.initInitialLog(player1TotalHP, player2TotalHP);
 
@@ -100,7 +98,7 @@ class Game {
     }
 
     /**Runs a single timestep of the game, enqueuing/executing any relevant actions and checking for end conditions*/
-    processTurn() {
+    processTimeStep() {
         this.gameState.timeStep++;
 
         // Remove dead characters from action queue - but only for character actions
@@ -427,7 +425,7 @@ class Game {
     runSimulation(maxSteps = Infinity) {
         let loser = null;
         while (!loser && this.gameState.timeStep < maxSteps) {
-            this.processTurn();
+            this.processTimeStep();
             loser = this.checkGameOver();
         }
 

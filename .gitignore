@@ -1,3 +1,6 @@
+# Game Output Ignore
+output/*
+
 # Logs
 logs
 *.log
