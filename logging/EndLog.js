@@ -5,8 +5,8 @@ class EndLog {
 
     constructor(gameState, loser) {
         //used for end-state processesing
-        this.timeStepLog = [];
-        this.logger = new Logger(); //singleton
+        this.timeStepLogs = [];
+        this.logger = Logger.instance; //singleton
 
         this.loser = loser;
         this.totalTimeSteps = gameState.timeStep;
@@ -19,6 +19,8 @@ class EndLog {
 
         //post-game processesing
         this.numDirectorChanges = -1;
+        this.numLeadChangesByRatio = -1;
+        this.numLeadChangesByValue = -1;
     }
 
     postGameProcess() {
@@ -29,11 +31,67 @@ class EndLog {
 
         //Number of Director Changes made during the game;
         this.numDirectorChanges = this.calculateNumDirectorChanges();
+
+        //Lead Changes
+        let leadChangeData = this.calculateNumLeadChanges();
+
+        this.numLeadChangesByRatio = leadChangeData.numLeadChangesByRatio;
+        this.numLeadChangesByValue = leadChangeData.numLeadChangesByValue;
+    }
+
+    calculateNumLeadChanges(){
+        let numLeadChangesByRatio = 0;
+        let numLeadChangesByValue = 0;
+
+        let leadingPlayerByRatio = 0;
+        let leadingPlayerByValue = 0;
+
+        for(let timeStepLog of this.timeStepLogs) {
+            let p1CurrentHP = timeStepLog.player1.currentHP;
+            let p1CurrentHPRatio = timeStepLog.player1.hpRatio;
+
+            let p2CurrentHP = timeStepLog.player2.currentHP;
+            let p2CurrentHPRatio = timeStepLog.player2.hpRatio;
+
+            let prevLeadingPlayerByRatio = leadingPlayerByRatio;
+            let prevLeadingPlayerByValue = leadingPlayerByValue;
+
+            //by value
+            if(p1CurrentHP > p2CurrentHP) {
+                leadingPlayerByValue = 1;
+            } else if(p2CurrentHP > p1CurrentHP) {
+                leadingPlayerByValue = 2;
+            } else {
+                leadingPlayerByValue = 0; //tied
+            }
+
+            if(leadingPlayerByValue !== prevLeadingPlayerByValue) {
+                numLeadChangesByValue++;
+            }
+
+            //by ratio
+            if(p1CurrentHPRatio > p2CurrentHPRatio) {
+                leadingPlayerByRatio = 1;
+            } else if(p2CurrentHPRatio > p1CurrentHPRatio) {
+                leadingPlayerByRatio = 2;
+            } else {
+                leadingPlayerByRatio = 0; //tied
+            }
+
+            if(leadingPlayerByRatio !== prevLeadingPlayerByRatio){
+                numLeadChangesByRatio++;
+            }
+        }
+
+        return {
+            "numLeadChangesByRatio": numLeadChangesByRatio,
+            "numLeadChangesByValue": numLeadChangesByValue
+        };
     }
 
     calculateNumDirectorChanges() {
         let numDirectorChanges = 0;
-        for(let timeStepLog of this.timeStepLog){
+        for(let timeStepLog of this.timeStepLogs){
             for(let directorAction of timeStepLog.directorActions){
                 numDirectorChanges++;
             }
@@ -41,8 +99,8 @@ class EndLog {
         return numDirectorChanges;
     }
 
-    setTimeStepLog(timeStepLog) {
-        this.timeStepLog = timeStepLog;
+    setTimeStepLog(timeStepLogs) {
+        this.timeStepLogs = timeStepLogs;
     }
 
     toJSON() {
@@ -55,7 +113,9 @@ class EndLog {
             player1TotalActions: this.player1TotalActions,
             player2DamageOut: this.player2DamageOut,
             player2TotalActions: this.player2TotalActions,
-            numDirectorChanges: this.numDirectorChanges
+            numDirectorChanges: this.numDirectorChanges,
+            numLeadChangesByRatio: this.numLeadChangesByRatio,
+            numLeadChangesByValue: this.numLeadChangesByValue
         };
     }
 }

@@ -6,7 +6,7 @@ class TimeStepLog {
     constructor(currentTimeStep) {
 
         //get singleton
-        this.gameState = new GameState();
+        //this.gameState = new GameState();
 
         this.timeStep = currentTimeStep; //done
         this.totalActions = 0;
@@ -83,7 +83,7 @@ class TimeStepLog {
     }
 
     updateLogFromGameState(gameState) {
-        this.actionsInQueue = new ActionQueueLog(this.gameState.actionQueue);
+        this.actionsInQueue = new ActionQueueLog(gameState.actionQueue);
 
         this.totalActions = gameState.totalPlayerActions;
         this.totalCurrentHP = gameState.currentHP;
