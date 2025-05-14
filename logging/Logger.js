@@ -83,6 +83,11 @@ class Logger {
     }
 
     completeLogToJSONString() {
+        //Do post-game processesing
+        this.endLog.setTimeStepLog(this.timeStepLogs);
+        this.endLog.postGameProcess();
+
+
 
         let timeStepLogs = [];
         for (let log of this.timeStepLog) {
