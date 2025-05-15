@@ -30,6 +30,7 @@ class GameState {
         this.totalPlayerActions = 0;
 
         this.totalPlayerDamageOut = 0;
+        this.totalHealOut = 0;
 
         //[actions, p1HP, p2HP, totalHP]
         this.actionCurrHPData = [];
@@ -46,6 +47,7 @@ class GameState {
             actions: 0,
             damageOut: 0,
             damageIn: 0,
+            healOut: 0,
             characterData: {
                 mage: {
                     damageOut: 0,
@@ -55,6 +57,8 @@ class GameState {
                     actionRatio: 0,
                     hpRatio: 0,
                     damageIn: 0,
+                    healOut: 0,
+                    healIn: 0,
                     stats: {}
                 },
                 warrior: {
@@ -65,6 +69,8 @@ class GameState {
                     actionRatio: 0,
                     hpRatio: 0,
                     damageIn: 0,
+                    healOut: 0,
+                    healIn: 0,
                     stats: {}
                 },
                 priest: {
@@ -75,6 +81,8 @@ class GameState {
                     actionRatio: 0,
                     hpRatio: 0,
                     damageIn: 0,
+                    healOut: 0,
+                    healIn: 0,
                     stats: {}
                 },
                 rogue: {
@@ -85,6 +93,8 @@ class GameState {
                     actionRatio: 0,
                     hpRatio: 0,
                     damageIn: 0,
+                    healOut: 0,
+                    healIn: 0,
                     stats: {}
                 }
             }
@@ -98,6 +108,7 @@ class GameState {
             actions: 0,
             damageOut: 0,
             damageIn: 0,
+            healOut: 0,
             characterData: {
                 mage: {
                     damageOut: 0,
@@ -107,6 +118,8 @@ class GameState {
                     actionRatio: 0,
                     hpRatio: 0,
                     damageIn: 0,
+                    healOut: 0,
+                    healIn: 0,
                     stats: {}
                 },
                 warrior: {
@@ -117,6 +130,8 @@ class GameState {
                     actionRatio: 0,
                     hpRatio: 0,
                     damageIn: 0,
+                    healOut: 0,
+                    healIn: 0,
                     stats: {}
                 },
                 priest: {
@@ -127,6 +142,8 @@ class GameState {
                     actionRatio: 0,
                     hpRatio: 0,
                     damageIn: 0,
+                    healOut: 0,
+                    healIn: 0,
                     stats: {}
                 },
                 rogue: {
@@ -137,6 +154,8 @@ class GameState {
                     actionRatio: 0,
                     hpRatio: 0,
                     damageIn: 0,
+                    healOut: 0,
+                    healIn: 0,
                     stats: {}
                 }
             }
@@ -369,6 +388,12 @@ class GameState {
         this.totalPlayerDamageOut += amount;
     }
 
+    addTotalHealOut(amount) {
+        this.totalHealOut += amount;
+    }
+
+
+    //TODO: This could all be simplified by using action data when it's processed instead of posthoc.
     addPlayer1DamageOut(character, amount) {
         this.player1Data.damageOut += amount;
         switch (character.name) {
@@ -475,7 +500,7 @@ class GameState {
     }
 
     addPlayer2DamageIn(character, amount) {
-        this.player2Data.damageOut += amount;
+        this.player2Data.damageIn += amount;
         switch (character.name) {
             case Constants.WARRIOR_NAME:
                 {
@@ -499,6 +524,130 @@ class GameState {
                 {
                     this.player2Data.characterData.rogue.damageIn += amount;
                     this.player2Data.characterData.rogue.damageInRatio = Utils.round(this.player2Data.characterData.rogue.damageIn / this.totalPlayerDamageIn, 2)
+                    break
+                }
+            default:
+                {
+                    this.logger.logError(`Invalid character for player 2 specified for damage in tracking: ${character.name}`);
+                    break
+                }
+        }
+    }
+
+    addPlayer1HealOut(character, amount) {
+        this.player1Data.healOut += amount;
+        switch (character.name) {
+            case Constants.WARRIOR_NAME:
+                {
+                    this.player1Data.characterData.warrior.healOut += amount;
+                    break
+                }
+            case Constants.MAGE_NAME:
+                {
+                    this.player1Data.characterData.mage.healOut += amount;
+                    break
+                }
+            case Constants.PRIEST_NAME:
+                {
+                    this.player1Data.characterData.priest.healOut += amount;
+                    break
+                }
+            case Constants.ROGUE_NAME:
+                {
+                    this.player1Data.characterData.rogue.healOut += amount;
+                    break
+                }
+            default:
+                {
+                    this.logger.logError(`Invalid character for player 1 specified for damage out tracking: ${character.name}`);
+                    break
+                }
+        }
+    }
+
+    addPlayer2HealOut(character, amount) {
+        this.player2Data.healOut += amount;
+        switch (character.name) {
+            case Constants.WARRIOR_NAME:
+                {
+                    this.player2Data.characterData.warrior.healOut += amount;
+                    break
+                }
+            case Constants.MAGE_NAME:
+                {
+                    this.player2Data.characterData.mage.healOut += amount;
+                    break
+                }
+            case Constants.PRIEST_NAME:
+                {
+                    this.player2Data.characterData.priest.healOut += amount;
+                    break
+                }
+            case Constants.ROGUE_NAME:
+                {
+                    this.player2Data.characterData.rogue.healOut += amount;
+                    break
+                }
+            default:
+                {
+                    this.logger.logError(`Invalid character for player 2 specified for damage out tracking: ${character.name}`);
+                    break
+                }
+        }
+    }
+
+    addPlayer1HealIn(character, amount) {
+        this.player1Data.healIn += amount;
+        switch (character.name) {
+            case Constants.WARRIOR_NAME:
+                {
+                    this.player1Data.characterData.warrior.healIn += amount;
+                    break
+                }
+            case Constants.MAGE_NAME:
+                {
+                    this.player1Data.characterData.mage.healIn += amount;
+                    break
+                }
+            case Constants.PRIEST_NAME:
+                {
+                    this.player1Data.characterData.priest.healIn += amount;
+                    break
+                }
+            case Constants.ROGUE_NAME:
+                {
+                    this.player1Data.characterData.rogue.healIn += amount;
+                    break
+                }
+            default:
+                {
+                    this.logger.logError(`Invalid character for player 1 specified for damage in tracking: ${character.name}`);
+                    break
+                }
+        }
+    }
+
+    addPlayer2HealIn(character, amount) {
+        this.player2Data.healOut += amount;
+        switch (character.name) {
+            case Constants.WARRIOR_NAME:
+                {
+                    this.player2Data.characterData.warrior.healIn += amount;
+                    break
+                }
+            case Constants.MAGE_NAME:
+                {
+                    this.player2Data.characterData.mage.healIn += amount;
+                    break
+                }
+            case Constants.PRIEST_NAME:
+                {
+                    this.player2Data.characterData.priest.healIn += amount;
+                    break
+                }
+            case Constants.ROGUE_NAME:
+                {
+                    this.player2Data.characterData.rogue.healIn += amount;
                     break
                 }
             default:

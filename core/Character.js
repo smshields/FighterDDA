@@ -146,6 +146,16 @@ class Character {
         let rawHeal = Utils.round((minHeal + ((avgDef - minHeal) * RNG.next())) * scalar, 2);
         let heal = Math.min(target.stats.HP - target.stats.currentHP, rawHeal);
         target.stats.currentHP += heal;
+
+        //TODO: Damage recieved tracking
+        this.gameState.addTotalHealOut(heal);
+        if (this.playerNumber === 1) {
+            this.gameState.addPlayer1HealOut(this, heal);
+            this.gameState.addPlayer2HealIn(target, heal);
+        } else {
+            this.gameState.addPlayer2HealOut(this, heal);
+            this.gameState.addPlayer1HealIn(target, heal);
+        }
         return heal;
     }
 
@@ -165,7 +175,7 @@ class Character {
         }
     }
 
-    getHPRatio(){
+    getHPRatio() {
         return this.stats.currentHP / this.stats.HP;
     }
 }

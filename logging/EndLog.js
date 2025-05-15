@@ -6,6 +6,7 @@ class EndLog {
     constructor(gameState, loser) {
         //used for end-state processesing
         this.timeStepLogs = [];
+        this.gameState = gameState;
 
         this.loser = loser;
         this.totalTimeSteps = gameState.timeStep;
@@ -20,6 +21,8 @@ class EndLog {
         this.numDirectorChanges = -1;
         this.numLeadChangesByRatio = -1;
         this.numLeadChangesByValue = -1;
+        this.player1To2ActionRatio = -1; //Number of player 1 actions for each player 2 action
+
     }
 
     postGameProcess(logger) {
@@ -39,17 +42,34 @@ class EndLog {
         this.numLeadChangesByRatio = leadChangeData.numLeadChangesByRatio;
         this.numLeadChangesByValue = leadChangeData.numLeadChangesByValue;
 
+        //Action Ratio
+        this.player1To2ActionRatio = this.calculatePlayerActionRatio();
+
         return true;
     }
 
-    calculateNumLeadChanges(){
+    calculatePlayerActionRatio(){
+        return this.gameState.player1Data.actions/this.gameState.player2Data.actions;
+    }
+
+    calculateNumLeadChanges() {
         let numLeadChangesByRatio = 0;
         let numLeadChangesByValue = 0;
 
-        let leadingPlayerByRatio = 0;
-        let leadingPlayerByValue = 0;
+        //initialize leads based on initial stats
+        let leadingPlayerByRatio = 0; //always starts as draw
+        let leadingPlayerByValue = 0; //depends on character stat rolls
+        let player1StartingHP = this.timeStepLogs[0].player1.currentHP;
+        let player2StartingHP = this.timeStepLogs[0].player2.currentHP;
+        if (player1StartingHP > player2StartingHP) {
+            leadingPlayerByValue = 1;
+        } else if (player2StartingHP > player1StartingHP) {
+            leadingPlayerByValue = 2;
+        } else {
+            leadingPlayerByValue = 0; //tied
+        }
 
-        for(let timeStepLog of this.timeStepLogs) {
+        for (let timeStepLog of this.timeStepLogs) {
             let p1CurrentHP = timeStepLog.player1.currentHP;
             let p1CurrentHPRatio = timeStepLog.player1.hpRatio;
 
@@ -60,28 +80,28 @@ class EndLog {
             let prevLeadingPlayerByValue = leadingPlayerByValue;
 
             //by value
-            if(p1CurrentHP > p2CurrentHP) {
+            if (p1CurrentHP > p2CurrentHP) {
                 leadingPlayerByValue = 1;
-            } else if(p2CurrentHP > p1CurrentHP) {
+            } else if (p2CurrentHP > p1CurrentHP) {
                 leadingPlayerByValue = 2;
             } else {
                 leadingPlayerByValue = 0; //tied
             }
 
-            if(leadingPlayerByValue !== prevLeadingPlayerByValue) {
+            if (leadingPlayerByValue !== prevLeadingPlayerByValue) {
                 numLeadChangesByValue++;
             }
 
             //by ratio
-            if(p1CurrentHPRatio > p2CurrentHPRatio) {
+            if (p1CurrentHPRatio > p2CurrentHPRatio) {
                 leadingPlayerByRatio = 1;
-            } else if(p2CurrentHPRatio > p1CurrentHPRatio) {
+            } else if (p2CurrentHPRatio > p1CurrentHPRatio) {
                 leadingPlayerByRatio = 2;
             } else {
                 leadingPlayerByRatio = 0; //tied
             }
 
-            if(leadingPlayerByRatio !== prevLeadingPlayerByRatio){
+            if (leadingPlayerByRatio !== prevLeadingPlayerByRatio) {
                 numLeadChangesByRatio++;
             }
         }
@@ -94,8 +114,8 @@ class EndLog {
 
     calculateNumDirectorChanges() {
         let numDirectorChanges = 0;
-        for(let timeStepLog of this.timeStepLogs){
-            for(let directorAction of timeStepLog.directorActions){
+        for (let timeStepLog of this.timeStepLogs) {
+            for (let directorAction of timeStepLog.directorActions) {
                 numDirectorChanges++;
             }
         }
@@ -118,7 +138,8 @@ class EndLog {
             player2TotalActions: this.player2TotalActions,
             numDirectorChanges: this.numDirectorChanges,
             numLeadChangesByRatio: this.numLeadChangesByRatio,
-            numLeadChangesByValue: this.numLeadChangesByValue
+            numLeadChangesByValue: this.numLeadChangesByValue,
+            player1To2ActionRatio: this.player1To2ActionRatio
         };
     }
 }
