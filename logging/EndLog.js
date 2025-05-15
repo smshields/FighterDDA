@@ -22,6 +22,7 @@ class EndLog {
         this.numLeadChangesByRatio = -1;
         this.numLeadChangesByValue = -1;
         this.player1To2ActionRatio = -1; //Number of player 1 actions for each player 2 action
+        this.winningPlayerRemainingHP = -1;
 
     }
 
@@ -45,7 +46,23 @@ class EndLog {
         //Action Ratio
         this.player1To2ActionRatio = this.calculatePlayerActionRatio();
 
+        //Winning player remaining HP
+        this.winningPlayerRemainingHP = this.calculateRemainingHPForWinner();
+
         return true;
+    }
+
+    calculateRemainingHPForWinner(){
+        
+        if(this.loser === 1){
+            return this.gameState.player2Data.currentHP;
+        } else if(this.loser === 2){
+            return this.gameState.player1Data.currentHP;
+        } else {
+            return this.gameState.player1Data.currentHP + this.gameState.player2Data.currentHP;
+        }
+
+
     }
 
     calculatePlayerActionRatio(){
@@ -139,7 +156,8 @@ class EndLog {
             numDirectorChanges: this.numDirectorChanges,
             numLeadChangesByRatio: this.numLeadChangesByRatio,
             numLeadChangesByValue: this.numLeadChangesByValue,
-            player1To2ActionRatio: this.player1To2ActionRatio
+            player1To2ActionRatio: this.player1To2ActionRatio,
+            winningPlayerRemainingHP: this.winningPlayerRemainingHP
         };
     }
 }
