@@ -439,6 +439,7 @@ class Game {
 
         //update end of game log
         this.logger.logEnd(new EndLog(this.gameState, loser));
+        this.logger.updatePostGameData();
 
         //write logs to output directory
         this.logger.writeLogToFile();

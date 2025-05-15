@@ -6,7 +6,6 @@ class EndLog {
     constructor(gameState, loser) {
         //used for end-state processesing
         this.timeStepLogs = [];
-        this.logger = Logger.instance; //singleton
 
         this.loser = loser;
         this.totalTimeSteps = gameState.timeStep;
@@ -23,9 +22,11 @@ class EndLog {
         this.numLeadChangesByValue = -1;
     }
 
-    postGameProcess() {
-        if (!this.timeStepLog) {
-            this.logger.logError("Endlog - postGameProcess: Error processing post game, timeStepLog not set.");
+    postGameProcess(logger) {
+
+
+
+        if (!this.timeStepLogs) {
             return false;
         }
 
@@ -37,6 +38,8 @@ class EndLog {
 
         this.numLeadChangesByRatio = leadChangeData.numLeadChangesByRatio;
         this.numLeadChangesByValue = leadChangeData.numLeadChangesByValue;
+
+        return true;
     }
 
     calculateNumLeadChanges(){
@@ -99,7 +102,7 @@ class EndLog {
         return numDirectorChanges;
     }
 
-    setTimeStepLog(timeStepLogs) {
+    setTimeStepLogs(timeStepLogs) {
         this.timeStepLogs = timeStepLogs;
     }
 

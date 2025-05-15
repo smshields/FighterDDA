@@ -5,3 +5,5 @@ class EndLogPlayer {
 	}
 
 }
+
+module.exports = EndLogPlayer;

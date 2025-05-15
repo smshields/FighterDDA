@@ -82,12 +82,17 @@ class Logger {
         }
     }
 
-    completeLogToJSONString() {
+    updatePostGameData() {
         //Do post-game processesing
-        this.endLog.setTimeStepLog(this.timeStepLogs);
-        this.endLog.postGameProcess();
+        this.endLog.setTimeStepLogs(this.timeStepLog);
 
+        let processSuccess = this.endLog.postGameProcess(this);
+        if(!processSuccess) {
+            this.logError("Logger - updatePostGameData: Post Game Processesing failed!");
+        }
+    }
 
+    completeLogToJSONString() {
 
         let timeStepLogs = [];
         for (let log of this.timeStepLog) {
