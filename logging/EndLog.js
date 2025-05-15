@@ -23,6 +23,9 @@ class EndLog {
         this.numLeadChangesByValue = -1;
         this.player1To2ActionRatio = -1; //Number of player 1 actions for each player 2 action
         this.winningPlayerRemainingHP = -1;
+        this.directorStatChangeAverageAbsolute = -1;
+        this.directorStatChangeAverageBuff = -1;
+        this.directorStatChangeAverageNerf = -1;
 
     }
 
@@ -49,24 +52,59 @@ class EndLog {
         //Winning player remaining HP
         this.winningPlayerRemainingHP = this.calculateRemainingHPForWinner();
 
+        //Director Stat Changes
+        let directorChangeData = this.calculateAverageDirectorStatChanges();
+        this.directorStatChangeAverageAbsolute = directorChangeData.totalAverage;
+        this.directorStatChangeAverageBuff = directorChangeData.buffAverage;
+        this.directorStatChangeAverageNerf = directorChangeData.nerfAverage;
+
+
         return true;
     }
 
-    calculateRemainingHPForWinner(){
-        
-        if(this.loser === 1){
+    calculateRemainingHPForWinner() {
+        if (this.loser === 1) {
             return this.gameState.player2Data.currentHP;
-        } else if(this.loser === 2){
+        } else if (this.loser === 2) {
             return this.gameState.player1Data.currentHP;
         } else {
             return this.gameState.player1Data.currentHP + this.gameState.player2Data.currentHP;
         }
+    }
 
+    calculateAverageDirectorStatChanges() {
+        let totalSum = 0;
+        let buffSum = 0;
+        let nerfSum = 0;
+        let numDirectorChanges = 0;
+
+        for (let timeStepLog of this.timeStepLogs) {
+            for (let directorAction of timeStepLog.directorActions) {
+                numDirectorChanges += directorAction.targets.length;
+                let actionChangeSum = directorAction.statChange * directorAction.targets.length;
+                totalSum += actionChangeSum;
+                if (directorAction.statChange >= 0) {
+                    buffSum += actionChangeSum;
+                } else {
+                    nerfSum += actionChangeSum;
+                }
+            }
+        }
+
+        let totalAverage = totalSum / numDirectorChanges;
+        let buffAverage = buffSum / numDirectorChanges;
+        let nerfAverage = nerfSum / numDirectorChanges;
+
+        return {
+            "totalAverage": totalAverage,
+            "buffAverage": buffAverage,
+            "nerfAverage": nerfAverage
+        }
 
     }
 
-    calculatePlayerActionRatio(){
-        return this.gameState.player1Data.actions/this.gameState.player2Data.actions;
+    calculatePlayerActionRatio() {
+        return this.gameState.player1Data.actions / this.gameState.player2Data.actions;
     }
 
     calculateNumLeadChanges() {
@@ -157,7 +195,10 @@ class EndLog {
             numLeadChangesByRatio: this.numLeadChangesByRatio,
             numLeadChangesByValue: this.numLeadChangesByValue,
             player1To2ActionRatio: this.player1To2ActionRatio,
-            winningPlayerRemainingHP: this.winningPlayerRemainingHP
+            winningPlayerRemainingHP: this.winningPlayerRemainingHP,
+            directorStatChangeAverageAbsolute: this.directorStatChangeAverageAbsolute,
+            directorStatChangeAverageBuff: this.directorStatChangeAverageBuff,
+            directorStatChangeAverageNerf: this.directorStatChangeAverageNerf
         };
     }
 }
