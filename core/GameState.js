@@ -39,6 +39,9 @@ class GameState {
         this.currentHP = 0;
         this.prevCurrentHP = 0;
 
+
+        //TODO: Refactor this into a "players" array with "characters" arrays that are more easily iterable.
+        //Making the code very bloated in other places.
         this.player1Data = {
             totalHP: 0,
             currentHP: 0,
@@ -48,6 +51,7 @@ class GameState {
             damageOut: 0,
             damageIn: 0,
             healOut: 0,
+            totalDefends: 0,
             characterData: {
                 mage: {
                     damageOut: 0,
@@ -59,6 +63,9 @@ class GameState {
                     damageIn: 0,
                     healOut: 0,
                     healIn: 0,
+                    totalDefendActions: 0,
+                    singleActions: 0,
+                    multiActions: 0,
                     stats: {}
                 },
                 warrior: {
@@ -71,6 +78,9 @@ class GameState {
                     damageIn: 0,
                     healOut: 0,
                     healIn: 0,
+                    totalDefendActions: 0,
+                    singleActions: 0,
+                    multiActions: 0,
                     stats: {}
                 },
                 priest: {
@@ -83,6 +93,9 @@ class GameState {
                     damageIn: 0,
                     healOut: 0,
                     healIn: 0,
+                    totalDefendActions: 0,
+                    singleActions: 0,
+                    multiActions: 0,
                     stats: {}
                 },
                 rogue: {
@@ -95,6 +108,9 @@ class GameState {
                     damageIn: 0,
                     healOut: 0,
                     healIn: 0,
+                    totalDefendActions: 0,
+                    singleActions: 0,
+                    multiActions: 0,
                     stats: {}
                 }
             }
@@ -109,6 +125,7 @@ class GameState {
             damageOut: 0,
             damageIn: 0,
             healOut: 0,
+            totalDefends: 0,
             characterData: {
                 mage: {
                     damageOut: 0,
@@ -120,6 +137,9 @@ class GameState {
                     damageIn: 0,
                     healOut: 0,
                     healIn: 0,
+                    totalDefendActions: 0,
+                    singleActions: 0,
+                    multiActions: 0,
                     stats: {}
                 },
                 warrior: {
@@ -132,6 +152,9 @@ class GameState {
                     damageIn: 0,
                     healOut: 0,
                     healIn: 0,
+                    totalDefendActions: 0,
+                    singleActions: 0,
+                    multiActions: 0,
                     stats: {}
                 },
                 priest: {
@@ -144,6 +167,9 @@ class GameState {
                     damageIn: 0,
                     healOut: 0,
                     healIn: 0,
+                    totalDefendActions: 0,
+                    singleActions: 0,
+                    multiActions: 0,
                     stats: {}
                 },
                 rogue: {
@@ -156,10 +182,47 @@ class GameState {
                     damageIn: 0,
                     healOut: 0,
                     healIn: 0,
+                    totalDefendActions: 0,
+                    singleActions: 0,
+                    multiActions: 0,
                     stats: {}
                 }
             }
         }
+    }
+
+    //player = 1, 2, or 0 (0 means from all)
+    getLowestHPCharacter(player) {
+        if (player === 1) {
+            return this.getLowestHPCharacterHelper(this.player1Data.characterData);
+        } else if (player === 2) {
+            return this.getLowestHPCharacterHelper(this.player2Data.characterData);
+        } else {
+            return (this.getLowestHPCharacterHelper(this.player1Data.characterData) + this.getLowestHPCharacterHelper(this.player2Data.characterData));
+        }
+    }
+
+    getLowestHPCharacterHelper(characterData) {
+        let lowestHPValue = Infinity;
+        let warriorHP = characterData.warrior.stats.currentHP;
+        let mageHP = characterData.mage.stats.currentHP;
+        let priestHP = characterData.priest.stats.currentHP;
+        let rogueHP = characterData.rogue.stats.currentHP;
+
+        if (lowestHPValue > warriorHP && warriorHP > 0) {
+            lowestHPValue = warriorHP;
+        }
+        if (lowestHPValue > mageHP && mageHP > 0) {
+            lowestHPValue = mageHP;
+        }
+        if (lowestHPValue > priestHP && priestHP > 0) {
+            lowestHPValue = priestHP;
+        }
+        if (lowestHPValue > rogueHP && rogueHP > 0) {
+            lowestHPValue = rogueHP;
+        }
+
+        return lowestHPValue;
     }
 
     initPlayer1Data(totalHP, characters) {
@@ -266,8 +329,6 @@ class GameState {
         let currentHP = 0;
         let hpRatio = 0;
 
-        //console.log(player.characters);
-
         for (let character of player.characters) {
             totalHP += character.baseStats.HP;
             currentHP += character.stats.currentHP;
@@ -314,29 +375,49 @@ class GameState {
         this.totalPlayerActions++;
     }
 
-    incrementPlayer1CharacterAction(character) {
+    incrementPlayer1CharacterAction(character, isMulti) {
         this.player1Data.actions++;
         switch (character.name) {
             case Constants.WARRIOR_NAME:
                 {
+                    if (isMulti) {
+                        this.player1Data.characterData.warrior.multiActions++;
+                    } else {
+                        this.player1Data.characterData.warrior.singleActions++;
+                    }
                     this.player1Data.characterData.warrior.actions++;
                     this.player1Data.characterData.warrior.actionRatio = Utils.round(this.player1Data.characterData.warrior.actions / this.totalPlayerActions, 2);
                     break
                 }
             case Constants.MAGE_NAME:
                 {
+                    if (isMulti) {
+                        this.player1Data.characterData.mage.multiActions++;
+                    } else {
+                        this.player1Data.characterData.mage.singleActions++;
+                    }
                     this.player1Data.characterData.mage.actions++;
                     this.player1Data.characterData.mage.actionRatio = Utils.round(this.player1Data.characterData.mage.actions / this.totalPlayerActions, 2);
                     break
                 }
             case Constants.PRIEST_NAME:
                 {
+                    if (isMulti) {
+                        this.player1Data.characterData.priest.multiActions++;
+                    } else {
+                        this.player1Data.characterData.priest.singleActions++;
+                    }
                     this.player1Data.characterData.priest.actions++;
                     this.player1Data.characterData.priest.actionRatio = Utils.round(this.player1Data.characterData.priest.actions / this.totalPlayerActions, 2);
                     break
                 }
             case Constants.ROGUE_NAME:
                 {
+                    if (isMulti) {
+                        this.player1Data.characterData.rogue.multiActions++;
+                    } else {
+                        this.player1Data.characterData.rogue.singleActions++;
+                    }
                     this.player1Data.characterData.rogue.actions++;
                     this.player1Data.characterData.rogue.actionRatio = Utils.round(this.player1Data.characterData.rogue.actions / this.totalPlayerActions, 2);
                     break
@@ -349,29 +430,50 @@ class GameState {
         }
     }
 
-    incrementPlayer2CharacterAction(character) {
+    incrementPlayer2CharacterAction(character, isMulti) {
         this.player2Data.actions++;
         switch (character.name) {
             case Constants.WARRIOR_NAME:
                 {
+                    if (isMulti) {
+                        this.player2Data.characterData.warrior.multiActions++;
+                    } else {
+                        this.player2Data.characterData.warrior.singleActions++;
+                    }
+
                     this.player2Data.characterData.warrior.actions++;
                     this.player2Data.characterData.warrior.actionRatio = Utils.round(this.player2Data.characterData.warrior.actions / this.totalPlayerActions, 2);
                     break
                 }
             case Constants.MAGE_NAME:
                 {
+                    if (isMulti) {
+                        this.player2Data.characterData.mage.multiActions++;
+                    } else {
+                        this.player2Data.characterData.mage.singleActions++;
+                    }
                     this.player2Data.characterData.mage.actions++;
                     this.player2Data.characterData.mage.actionRatio = Utils.round(this.player2Data.characterData.mage.actions / this.totalPlayerActions, 2);
                     break
                 }
             case Constants.PRIEST_NAME:
                 {
+                    if (isMulti) {
+                        this.player2Data.characterData.priest.multiActions++;
+                    } else {
+                        this.player2Data.characterData.priest.singleActions++;
+                    }
                     this.player2Data.characterData.priest.actions++;
                     this.player2Data.characterData.priest.actionRatio = Utils.round(this.player2Data.characterData.priest.actions / this.totalPlayerActions, 2);
                     break
                 }
             case Constants.ROGUE_NAME:
                 {
+                    if (isMulti) {
+                        this.player2Data.characterData.rogue.multiActions++;
+                    } else {
+                        this.player2Data.characterData.rogue.singleActions++;
+                    }
                     this.player2Data.characterData.rogue.actions++;
                     this.player2Data.characterData.rogue.actionRatio = Utils.round(this.player2Data.characterData.rogue.actions / this.totalPlayerActions, 2);
                     break
@@ -392,33 +494,94 @@ class GameState {
         this.totalHealOut += amount;
     }
 
+    //TODO: This could all be simplified by using action data when it's executed.
+    addPlayer1DefendAction(character) {
+        this.player1Data.totalDefends++;
+        switch (character.name) {
+            case Constants.WARRIOR_NAME:
+                {
+                    this.player1Data.characterData.warrior.totalDefendActions++;
+                    break
+                }
+            case Constants.MAGE_NAME:
+                {
+                    this.player1Data.characterData.mage.totalDefendActions++;
+                    break
+                }
+            case Constants.PRIEST_NAME:
+                {
+                    this.player1Data.characterData.priest.totalDefendActions++;
+                    break
+                }
+            case Constants.ROGUE_NAME:
+                {
+                    this.player1Data.characterData.rogue.totalDefendActions++;
+                    break
+                }
+            default:
+                {
+                    this.logger.logError(`Invalid character for player 1 specified for defend tracking: ${character.name}`);
+                    break
+                }
+        }
+    }
 
-    //TODO: This could all be simplified by using action data when it's processed instead of posthoc.
+    addPlayer2DefendAction(character) {
+        this.player2Data.totalDefends++;
+        switch (character.name) {
+            case Constants.WARRIOR_NAME:
+                {
+                    this.player2Data.characterData.warrior.totalDefendActions++;
+                    break
+                }
+            case Constants.MAGE_NAME:
+                {
+                    this.player2Data.characterData.mage.totalDefendActions++;
+                    break
+                }
+            case Constants.PRIEST_NAME:
+                {
+                    this.player2Data.characterData.priest.totalDefendActions++;
+                    break
+                }
+            case Constants.ROGUE_NAME:
+                {
+                    this.player2Data.characterData.rogue.totalDefendActions++;
+                    break
+                }
+            default:
+                {
+                    this.logger.logError(`Invalid character for player 2 specified for defend tracking: ${character.name}`);
+                    break
+                }
+        }
+    }
+
     addPlayer1DamageOut(character, amount) {
         this.player1Data.damageOut += amount;
         switch (character.name) {
             case Constants.WARRIOR_NAME:
                 {
                     this.player1Data.characterData.warrior.damageOut += amount;
-                    this.player1Data.characterData.warrior.damageOutRatio = Utils.round(this.player1Data.characterData.warrior.damageOut / this.totalPlayerDamageOut, 2)
+                    this.player1Data.characterData.warrior.damageOutRatio = Utils.round(this.player1Data.characterData.warrior.damageOut / this.player1Data.damageOut, 2);
                     break
                 }
             case Constants.MAGE_NAME:
                 {
                     this.player1Data.characterData.mage.damageOut += amount;
-                    this.player1Data.characterData.mage.damageOutRatio = Utils.round(this.player1Data.characterData.mage.damageOut / this.totalPlayerDamageOut, 2)
+                    this.player1Data.characterData.mage.damageOutRatio = Utils.round(this.player1Data.characterData.mage.damageOut / this.player1Data.damageOut, 2);
                     break
                 }
             case Constants.PRIEST_NAME:
                 {
                     this.player1Data.characterData.priest.damageOut += amount;
-                    this.player1Data.characterData.priest.damageOutRatio = Utils.round(this.player1Data.characterData.priest.damageOut / this.totalPlayerDamageOut, 2)
+                    this.player1Data.characterData.priest.damageOutRatio = Utils.round(this.player1Data.characterData.priest.damageOut / this.player1Data.damageOut, 2);
                     break
                 }
             case Constants.ROGUE_NAME:
                 {
                     this.player1Data.characterData.rogue.damageOut += amount;
-                    this.player1Data.characterData.rogue.damageOutRatio = Utils.round(this.player1Data.characterData.rogue.damageOut / this.totalPlayerDamageOut, 2)
+                    this.player1Data.characterData.rogue.damageOutRatio = Utils.round(this.player1Data.characterData.rogue.damageOut / this.player1Data.damageOut, 2);
                     break
                 }
             default:
@@ -435,25 +598,25 @@ class GameState {
             case Constants.WARRIOR_NAME:
                 {
                     this.player2Data.characterData.warrior.damageOut += amount;
-                    this.player2Data.characterData.warrior.damageOutRatio = Utils.round(this.player2Data.characterData.warrior.damageOut / this.totalPlayerDamageOut, 2)
+                    this.player2Data.characterData.warrior.damageOutRatio = Utils.round(this.player2Data.characterData.warrior.damageOut / this.player2Data.damageOut, 2);
                     break
                 }
             case Constants.MAGE_NAME:
                 {
                     this.player2Data.characterData.mage.damageOut += amount;
-                    this.player2Data.characterData.mage.damageOutRatio = Utils.round(this.player2Data.characterData.mage.damageOut / this.totalPlayerDamageOut, 2)
+                    this.player2Data.characterData.mage.damageOutRatio = Utils.round(this.player2Data.characterData.mage.damageOut / this.player2Data.damageOut, 2);
                     break
                 }
             case Constants.PRIEST_NAME:
                 {
                     this.player2Data.characterData.priest.damageOut += amount;
-                    this.player2Data.characterData.priest.damageOutRatio = Utils.round(this.player2Data.characterData.priest.damageOut / this.totalPlayerDamageOut, 2)
+                    this.player2Data.characterData.priest.damageOutRatio = Utils.round(this.player2Data.characterData.priest.damageOut / this.player2Data.damageOut, 2);
                     break
                 }
             case Constants.ROGUE_NAME:
                 {
                     this.player2Data.characterData.rogue.damageOut += amount;
-                    this.player2Data.characterData.rogue.damageOutRatio = Utils.round(this.player2Data.characterData.rogue.damageOut / this.totalPlayerDamageOut, 2)
+                    this.player2Data.characterData.rogue.damageOutRatio = Utils.round(this.player2Data.characterData.rogue.damageOut / this.player2Data.damageOut, 2)
                     break
                 }
             default:
@@ -470,25 +633,25 @@ class GameState {
             case Constants.WARRIOR_NAME:
                 {
                     this.player1Data.characterData.warrior.damageIn += amount;
-                    this.player1Data.characterData.warrior.damageInRatio = Utils.round(this.player1Data.characterData.warrior.damageIn / this.totalPlayerDamageIn, 2)
+                    this.player1Data.characterData.warrior.damageInRatio = Utils.round(this.player1Data.characterData.warrior.damageIn / this.player1Data.damageIn, 2);
                     break
                 }
             case Constants.MAGE_NAME:
                 {
                     this.player1Data.characterData.mage.damageIn += amount;
-                    this.player1Data.characterData.mage.damageInRatio = Utils.round(this.player1Data.characterData.mage.damageIn / this.totalPlayerDamageIn, 2)
+                    this.player1Data.characterData.mage.damageInRatio = Utils.round(this.player1Data.characterData.mage.damageIn / this.player1Data.damageIn, 2);
                     break
                 }
             case Constants.PRIEST_NAME:
                 {
                     this.player1Data.characterData.priest.damageIn += amount;
-                    this.player1Data.characterData.priest.damageInRatio = Utils.round(this.player1Data.characterData.priest.damageIn / this.totalPlayerDamageIn, 2)
+                    this.player1Data.characterData.priest.damageInRatio = Utils.round(this.player1Data.characterData.priest.damageIn / this.player1Data.damageIn, 2);
                     break
                 }
             case Constants.ROGUE_NAME:
                 {
                     this.player1Data.characterData.rogue.damageIn += amount;
-                    this.player1Data.characterData.rogue.damageInRatio = Utils.round(this.player1Data.characterData.rogue.damageIn / this.totalPlayerDamageIn, 2)
+                    this.player1Data.characterData.rogue.damageInRatio = Utils.round(this.player1Data.characterData.rogue.damageIn / this.player1Data.damageIn, 2);
                     break
                 }
             default:
@@ -505,25 +668,25 @@ class GameState {
             case Constants.WARRIOR_NAME:
                 {
                     this.player2Data.characterData.warrior.damageIn += amount;
-                    this.player2Data.characterData.warrior.damageInRatio = Utils.round(this.player2Data.characterData.warrior.damageIn / this.totalPlayerDamageIn, 2)
+                    this.player2Data.characterData.warrior.damageInRatio = Utils.round(this.player2Data.characterData.warrior.damageIn / this.player2Data.damageIn, 2);
                     break
                 }
             case Constants.MAGE_NAME:
                 {
                     this.player2Data.characterData.mage.damageIn += amount;
-                    this.player2Data.characterData.mage.damageInRatio = Utils.round(this.player2Data.characterData.mage.damageIn / this.totalPlayerDamageIn, 2)
+                    this.player2Data.characterData.mage.damageInRatio = Utils.round(this.player2Data.characterData.mage.damageIn / this.player2Data.damageIn, 2);
                     break
                 }
             case Constants.PRIEST_NAME:
                 {
                     this.player2Data.characterData.priest.damageIn += amount;
-                    this.player2Data.characterData.priest.damageInRatio = Utils.round(this.player2Data.characterData.priest.damageIn / this.totalPlayerDamageIn, 2)
+                    this.player2Data.characterData.priest.damageInRatio = Utils.round(this.player2Data.characterData.priest.damageIn / this.player2Data.damageIn, 2);
                     break
                 }
             case Constants.ROGUE_NAME:
                 {
                     this.player2Data.characterData.rogue.damageIn += amount;
-                    this.player2Data.characterData.rogue.damageInRatio = Utils.round(this.player2Data.characterData.rogue.damageIn / this.totalPlayerDamageIn, 2)
+                    this.player2Data.characterData.rogue.damageInRatio = Utils.round(this.player2Data.characterData.rogue.damageIn / this.player2Data.damageIn, 2);
                     break
                 }
             default:
@@ -559,7 +722,7 @@ class GameState {
                 }
             default:
                 {
-                    this.logger.logError(`Invalid character for player 1 specified for damage out tracking: ${character.name}`);
+                    this.logger.logError(`Invalid character for player 1 specified for heal out tracking: ${character.name}`);
                     break
                 }
         }
@@ -590,7 +753,7 @@ class GameState {
                 }
             default:
                 {
-                    this.logger.logError(`Invalid character for player 2 specified for damage out tracking: ${character.name}`);
+                    this.logger.logError(`Invalid character for player 2 specified for heal out tracking: ${character.name}`);
                     break
                 }
         }
@@ -621,7 +784,7 @@ class GameState {
                 }
             default:
                 {
-                    this.logger.logError(`Invalid character for player 1 specified for damage in tracking: ${character.name}`);
+                    this.logger.logError(`Invalid character for player 1 specified for heal in tracking: ${character.name}`);
                     break
                 }
         }
@@ -652,7 +815,7 @@ class GameState {
                 }
             default:
                 {
-                    this.logger.logError(`Invalid character for player 2 specified for damage in tracking: ${character.name}`);
+                    this.logger.logError(`Invalid character for player 2 specified for heal in tracking: ${character.name}`);
                     break
                 }
         }

@@ -219,7 +219,7 @@ class Game {
         }
 
         //game lasted more than 30 minutes, end and report
-        if(this.gameState.timeStep + (this.gameState.totalPlayerActions*3) >= Constants.MAX_GAME_LENGTH_SECONDS){
+        if (this.gameState.timeStep + (this.gameState.totalPlayerActions * 3) >= Constants.MAX_GAME_LENGTH_SECONDS) {
             //TODO: Tiebreaker rules: # of living characters, then remaining HP ratio, then coin flip
             return -1;
         }
@@ -279,16 +279,19 @@ class Game {
 
         //update data for actions taken
         this.gameState.incrementTotalPlayerActions();
+        let isMulti = action.action.type.includes("multi"); //track total single/multi actions for each character
         if (action.actor.playerNumber === 1) {
-            this.gameState.incrementPlayer1CharacterAction(action.actor);
+            this.gameState.incrementPlayer1CharacterAction(action.actor, isMulti);
         } else {
-            this.gameState.incrementPlayer2CharacterAction(action.actor);
+            this.gameState.incrementPlayer2CharacterAction(action.actor, isMulti);
         }
 
         //Logging for Player Action
         let actionMessage = `Game - executeAction: Player ${action.actor.playerNumber}'s ${action.actor.name} is using ${action.action.type}. `;
 
         const defeatedCharacters = []; // Keep track of defeated characters in this action
+
+
 
         switch (action.action.type) {
             case "attack":
@@ -340,7 +343,7 @@ class Game {
                 {
                     for (let target of aliveTargets) {
                         let prevCurrentHP = target.stats.currentHP;
-                        let healAmount = Utils.round(action.actor.performHeal(target, Constants.HEAL_SCALAR));
+                        let healAmount = Utils.round(action.actor.performHeal(target, Constants.MULTI_HEAL_SCALAR));
                         actionMessage += `Heals ${healAmount} health to player ${target.playerNumber}'s ${target.name}. `;
                         characterActionOutcomeLog.addTargetOutcome(target, action, prevCurrentHP, null, null);
                     }
