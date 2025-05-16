@@ -8,10 +8,13 @@ class EndLog {
         this.timeStepLogs = [];
         this.gameState = gameState;
 
+        //Game outcome data
         this.loser = loser;
         this.totalTimeSteps = gameState.timeStep;
         this.totalActions = gameState.totalPlayerActions;
         this.totalDamageOut = gameState.totalPlayerDamageOut;
+
+        //TODO: Move to player objects
         this.player1DamageOut = gameState.player1Data.damageOut;
         this.player1TotalActions = gameState.player1Data.actions;
         this.player2DamageOut = gameState.player2Data.damageOut;
@@ -26,12 +29,10 @@ class EndLog {
         this.directorStatChangeAverageAbsolute = -1;
         this.directorStatChangeAverageBuff = -1;
         this.directorStatChangeAverageNerf = -1;
-
+        this.winningPlayerLowestCharacterHP = -1;
     }
 
     postGameProcess(logger) {
-
-
 
         if (!this.timeStepLogs) {
             return false;
@@ -51,6 +52,7 @@ class EndLog {
 
         //Winning player remaining HP
         this.winningPlayerRemainingHP = this.calculateRemainingHPForWinner();
+        this.winningPlayerLowestCharacterHP = this.calculateWinningPlayerLowestCharacterHP();
 
         //Director Stat Changes
         let directorChangeData = this.calculateAverageDirectorStatChanges();
@@ -58,8 +60,17 @@ class EndLog {
         this.directorStatChangeAverageBuff = directorChangeData.buffAverage;
         this.directorStatChangeAverageNerf = directorChangeData.nerfAverage;
 
-
         return true;
+    }
+
+    calculateWinningPlayerLowestCharacterHP() {
+        if(this.loser === 1){
+            return this.gameState.getLowestHPCharacter(2);
+        } else if(this.loser === 2){
+            return this.gameState.getLowestHPCharacter(1);
+        } else {
+            return this.gameState.getLowestHPCharacter(0);
+        }
     }
 
     calculateRemainingHPForWinner() {
@@ -76,6 +87,8 @@ class EndLog {
         let totalSum = 0;
         let buffSum = 0;
         let nerfSum = 0;
+        //currently counting per individual buff/nerf, maybe add a mode for 
+        //when group buff/nerfs are applied?
         let numDirectorChanges = 0;
 
         for (let timeStepLog of this.timeStepLogs) {
@@ -198,7 +211,8 @@ class EndLog {
             winningPlayerRemainingHP: this.winningPlayerRemainingHP,
             directorStatChangeAverageAbsolute: this.directorStatChangeAverageAbsolute,
             directorStatChangeAverageBuff: this.directorStatChangeAverageBuff,
-            directorStatChangeAverageNerf: this.directorStatChangeAverageNerf
+            directorStatChangeAverageNerf: this.directorStatChangeAverageNerf,
+            winningPlayerLowestCharacterHP: this.winningPlayerLowestCharacterHP
         };
     }
 }

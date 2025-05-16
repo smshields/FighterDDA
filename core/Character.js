@@ -63,6 +63,13 @@ class Character {
         this.stats.Defense *= Constants.DEFENSE_SCALAR;
         this.stats.MagicDefense *= Constants.DEFENSE_SCALAR;
         this.defenseBoosted = true;
+
+        if (this.playerNumber === 1) {
+            this.gameState.addPlayer1DefendAction(this);
+        } else {
+            this.gameState.addPlayer2DefendAction(this);
+        }
+
     }
 
     takeDamage(damage) {
