@@ -1,0 +1,147 @@
+<!-- interactive_graph_viewer.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Log Visualization</title>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; /* Remove default margin */
+            padding: 20px; /* Add padding to body instead of margin */
+            background-color: #6c757d; /* Darker grey background */
+            color: #333; 
+        }
+        h1 { 
+            text-align: center; 
+            color: #ffffff; /* White text for title on dark background */
+            margin-bottom: 30px;
+        }
+        .container { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        .controls { 
+            margin-bottom: 20px; 
+            padding: 20px; 
+            background-color: #fff; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            width: 95%; /* Match graph width */
+            max-width: 1000px; /* Match graph max-width */
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        }
+        .controls label b {
+            font-weight: bold; /* Bold the label text */
+        }
+        #jsonFileInput { 
+            padding: 10px; 
+            border: 1px solid #ced4da; 
+            border-radius: 4px; 
+            width: calc(100% - 22px); /* Adjust for padding and border */
+            margin-top: 5px;
+        }
+        #plotlyGraph { 
+            width: 95%; 
+            max-width: 1000px; 
+            height: 600px; 
+            background-color: #fff; /* Graph plot area will be white from JS */
+            border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
+            margin-bottom:20px;
+        }
+        .info-sections { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: space-around; 
+            width: 95%; 
+            max-width: 1000px; 
+        }
+        .info-box { 
+            background-color: #fff; 
+            padding: 20px; 
+            margin:10px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
+            flex: 1; 
+            min-width: 300px; 
+            box-sizing: border-box;
+        }
+        .info-box h3 { 
+            margin-top: 0; 
+            margin-bottom: 15px;
+            color: #3498db; 
+            text-align: center; /* Center title */
+            font-weight: bold;   /* Bold title */
+        }
+        .info-box ul { 
+            list-style-type: none; 
+            padding: 0; 
+        }
+        .info-box li { 
+            margin-bottom: 10px; 
+            line-height: 1.6; 
+            display: flex; /* For key-value alignment */
+            justify-content: space-between; /* For key-value alignment */
+            border-bottom: 1px solid #eee; /* Horizontal rule */
+            padding-bottom: 10px;
+        }
+        .info-box li:last-child {
+            border-bottom: none; /* No rule for the last item */
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .info-box li .key { 
+            color: #555; 
+            font-weight: bold;
+            padding-right: 10px; /* Space between key and value */
+            text-align: left;
+        }
+        .info-box li .value {
+            text-align: right; /* Right-justify value */
+            flex-grow: 1; /* Allow value to take remaining space */
+        }
+        #hoverDefaultText {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100px; /* Give some height for vertical centering */
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #777;
+        }
+
+        p.error-message { color: red; font-weight: bold; text-align: center; }
+        pre.error-stack { color: red; font-size: 0.8em; white-space: pre-wrap; background-color: #ffebeb; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Game Log Visualization</h1>
+
+    <div class="container">
+        <div class="controls">
+            <label for="jsonFileInput"><b>Select JSON Log File:</b></label>
+            <input type="file" id="jsonFileInput" accept=".json">
+        </div>
+
+        <div id="plotlyGraph"></div>
+        
+        <div class="info-sections">
+            <div id="hoverData" class="info-box">
+                <h3><b>Hover Details</b></h3>
+                <p id="hoverDefaultText">Hover to Inspect Data</p>
+                <ul id="hoverInfoList"></ul>
+            </div>
+            <div id="summaryData" class="info-box">
+                <h3><b>Summary</b></h3>
+                <p>Load a JSON file to see summary data.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="graph_logic.js"></script>
+</body>
+</html>
