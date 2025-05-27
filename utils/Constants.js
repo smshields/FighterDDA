@@ -25,18 +25,17 @@ class Constants {
     //Director Configuration
     static BALANCE_MODE = 'difficulty'; //determines type of balancing - inclusion/difficulty
     static DIRECTOR_ACTION_INTERVAL = 30; //Number of timeSteps between each director action   
-    static TARGET_ACTIONS = 120; //determines the target amount of actions for difficulty
+    static TARGET_ACTIONS = 90; //determines the target amount of actions for difficulty
     static CLAMP_STAT_CHANGE = false; //allows us to clamp how much something is buffed/nerfed
     static MAX_BUFF_AMOUNT = 30; //clamps maximum buff
     static MAX_NERF_AMOUNT = 30; //clamps minimum buff
-    static DIRECTOR_CHANGE_SCALAR = 0.25;
-
+    
     //Player AI Configuration
     static DEFAULT_PLAYER_AI = 'optimal'; //determines AI of player if not specified
     static PLAYER_1_AI = 'optimal'; //determines AI type of player 1 - optimal, random, suboptimal
     static PLAYER_2_AI = 'optimal'; //determines AI type of player 2 - optimal, random, suboptimal
-    static PLAYER_1_AI_RANDOMNESS = 0; //determines chance of diverging from ranked choices (0 = always pick highest ranked)
-    static PLAYER_2_AI_RANDOMNESS = 0;
+    static PLAYER_1_AI_RANDOMNESS = 1; //determines chance of diverging from ranked choices (0 = always pick highest ranked)
+    static PLAYER_2_AI_RANDOMNESS = 1;
     static LOW_HEALTH_THRESHOLD = 0.3; //determines when we consider a character to be at low health
 
     //Names of action types
@@ -49,12 +48,18 @@ class Constants {
     static MULTI_HEAL_ACTION_TYPE = 'multi_heal';
 
     //Stat scaling configuration
-    static MULTI_TARGET_SCALAR = 0.25; //Scales multi-target damage
     static SINGLE_TARGET_SCALAR = 1; //Scales single-target damage
+    static MULTI_TARGET_SCALAR = 0.25; //Scales multi-target damage
+
     static HEAL_SCALAR = 0.1; //scales healing 
     static MULTI_HEAL_SCALAR = 0.025; //scales multi-target healing
-    static SPEED_SCALAR = 0.1; //scales how fast speed adds to action meter
+
     static DEFENSE_SCALAR = 1.25; //determines how much defend boosts defense
+
+    static SPEED_SCALAR = 0.1; //scales how fast speed adds to action meter
+
+    static DIRECTOR_CHANGE_SCALAR = 0.25;
+
 
     //Damage Clamp configuration
     static MAX_POSSIBLE_RAW_DAMAGE = 90;

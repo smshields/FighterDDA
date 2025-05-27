@@ -221,11 +221,11 @@ class TimeStepLog {
                 }
             },
             player2: {
-                player2TotalActions: this.player2.player2TotalActions,
-                player2CurrentTotalHealth: this.player2.player2CurrentTotalHealth,
-                player2CurrentHPRatio: this.player2.player2CurrentHPRatio,
-                player2TotalDamageDealt: this.player2.player2TotalDamageDealt,
-                player2TotalDamageTaken: this.player2.player2TotalDamageTaken,
+                totalActions: this.player2.totalActions,
+                currentHP: this.player2.currentHP,
+                hpRatio: this.player2.hpRatio,
+                totalDamageOut: this.player2.totalDamageDealt,
+                totalDamageIn: this.player2.totalDamageIn,
                 characters: {
                     warrior: {
                         stats: this.player2.characters.warrior.stats,
