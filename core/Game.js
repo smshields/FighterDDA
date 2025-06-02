@@ -203,7 +203,7 @@ class Game {
         } else if (comparator < 0) {
             return -1;
         } else { //if there is a speed tie, pick randomly
-            if (Math.random() < 0.5) {
+            if (RNG.next() < 0.5) {
                 return 1;
             } else {
                 return -1;

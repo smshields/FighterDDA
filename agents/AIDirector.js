@@ -34,11 +34,11 @@ class AIDirector {
     }
 
     getRandomBuffAmount() {
-        return Math.floor(Math.random() * this.maxBuffAmount);
+        return Math.floor(RNG.next() * this.maxBuffAmount);
     }
 
     getRandomNerfAmount() {
-        return Math.floor(Math.random() * this.maxNerfAmount);
+        return Math.floor(RNG.next() * this.maxNerfAmount);
     }
 
 

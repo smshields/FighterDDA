@@ -13,7 +13,7 @@ const TeamFactory = require('./core/TeamFactory');
 // New function to run repeated simulations
 function runRepeatedSimulations(
     numSimulations = 1,
-    seed = 1234,
+    startingSeed = 1,
     directorActionInterval = 3,
     actionExecutionInterval = 3
 ) {
@@ -34,6 +34,8 @@ function runRepeatedSimulations(
         console.log("Main - runRepeatedSimulations: Issue making output directory!" + err);
     }
 
+    let currentSeed = startingSeed;
+
     for (let i = 0; i < numSimulations; i++) {
         // Create subdirectory for each simulation
         const simulationDirectory = path.join(mainDirectory, `simulation_${i + 1}`);
@@ -53,7 +55,7 @@ function runRepeatedSimulations(
         team1.characters.forEach(character => character.player = team1);
         team2.characters.forEach(character => character.player = team2);
 
-        const game = new Game([team1, team2], new AIDirector('difficulty'), directorActionInterval, actionExecutionInterval);
+        const game = new Game([team1, team2], new AIDirector('difficulty'), directorActionInterval, actionExecutionInterval, currentSeed);
         game.logger.outputDirectory = simulationDirectory;
         const results = game.runSimulation();
 
@@ -89,6 +91,8 @@ function runRepeatedSimulations(
             console.log(Constants.GAME_OVER_CONSOLE_FORMATTING, `****************************************`);
         }
         delete game;
+
+        currentSeed++;
     }
 
     //TODO: Global logging to file capabilities
@@ -128,4 +132,4 @@ agent2.characters.forEach(character => character.player = agent2);
 //game.runSimulation();
 
 // Run repeated simulations
-runRepeatedSimulations(1000, 1234, 20, 3);
+runRepeatedSimulations(10, 1, 20, 3);
