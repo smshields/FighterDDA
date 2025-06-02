@@ -46,13 +46,22 @@ class AIPlayer {
             actionScores.push(this.evaluateAction(actor, allies, opponents, action.type));
         }
 
+        //debugging
+        // console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+        // console.log("ACTOR: " + actor.name);
+        // console.log("PLAYER: " + actor.playerNumber);
+        // for (let action of actionScores) {
+        //     console.log(action.actionType + " score is: " + action.score);
+        // }
+        // console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+
         if (actionScores.length <= 0) {
             this.logger.logError("AIPlayer - chooseAction: No actions able to be scored! Returning null.");
             return null;
         }
 
         //select an action
-        let selectedActionScore = this.selectActionFromScores(actionScores);
+        let selectedActionScore = this.selectActionFromScores(actionScores, actor.playerNumber);
 
         //get action object
         let actionObject = actor.actions.filter(action => {
@@ -125,7 +134,7 @@ class AIPlayer {
      * @param {ActionScore[]} actionScores - a list containing all scored actions.
      * @returns {ActionScore} the selected action.
      * */
-    selectActionFromScores(actionScores) {
+    selectActionFromScores(actionScores, playerNumber) {
         if (this.mode !== Constants.RANDOM_PLAYER_AI_MODE) {
 
             //If we are griefing, first invert all weights
@@ -137,7 +146,7 @@ class AIPlayer {
 
             //sort descending
             actionScores.sort((a, b) => {
-                return a.score - b.score;
+                return b.score - a.score;
             });
 
             //remove any top-scoring values and ties; these will 
@@ -148,15 +157,9 @@ class AIPlayer {
             }
 
             let totalValue = 0;
-            //For each weight, using a 2D graph with x as 1 - randomness and y as weight:
-            //Find slope between (0, weight) and (1, 0)
-            //Use new slope to find new weight (new x is set randomness)
-            for (let actionScore of actionScores) {
-                let slope = Utils.getSlopeFromPoints(0, actionScore.score, 1, 0);
-                let newWeight = (slope * (1 - Constants.PLAYER_AI_RANDOMNESS)) + actionScore.score; //get score with corresponding randomness change
-                actionScore.score = newWeight;
-                totalValue += actionScore.score;
-            }
+            let isWeightedRandom = true;
+            playerNumber === 1 && Constants.PLAYER_1_AI_RANDOMNESS ? isWeightedRandom = true : isWeightedRandom = false;
+            playerNumber === 2 && Constants.PLAYER_2_AI_RANDOMNESS ? isWeightedRandom = true : isWeightedRandom = false;
 
             //add highest scores back into array
             for (let highScore of highestScores) {
@@ -164,15 +167,19 @@ class AIPlayer {
                 actionScores.unshift(highScore);
             }
 
-            let randomNumber = RNG.next() * totalValue;
-            let cumulativeValue = 0;
+            if (isWeightedRandom) {
+                let randomNumber = RNG.next() * totalValue;
+                let cumulativeValue = 0;
 
-            //use weighted random to select choice (modified by randomness - if 0 highest scores will be only thing > 0)
-            for (let actionScore of actionScores) {
-                cumulativeValue += actionScore.score;
-                if (randomNumber <= cumulativeValue) {
-                    return actionScore;
+                //use weighted random to select choice (modified by randomness - if 0 highest scores will be only thing > 0)
+                for (let actionScore of actionScores) {
+                    cumulativeValue += actionScore.score;
+                    if (randomNumber <= cumulativeValue) {
+                        return actionScore;
+                    }
                 }
+            } else {
+                return actionScores[0];
             }
         }
 
@@ -208,12 +215,12 @@ class AIPlayer {
             return attackActionScore;
         }
 
-        //If it kills, weight very highly. Otherwise, do it proportional to damage potential
+        //If it kills, weight very highly. Otherwise, do it proportional to damage potential plus a base value
         if (bestAttackDamagePotential.killsTarget) {
-            attackActionScore.score = 1;
+            attackActionScore.score = .75;
             attackActionScore.targets = [bestAttackDamagePotential.target];
         } else {
-            attackActionScore.score = Utils.clamp(bestAttackDamagePotential.damagePotential / bestAttackDamagePotential.target.stats.currentHP, 0, 1);
+            attackActionScore.score = Utils.clamp(.1 + (bestAttackDamagePotential.damagePotential / bestAttackDamagePotential.target.stats.currentHP), 0, 1);
             attackActionScore.targets = [bestAttackDamagePotential.target];
         }
         return attackActionScore;
@@ -243,7 +250,7 @@ class AIPlayer {
         let multiAttackDamagePotential = new MultiAttackDamagePotential(actor, targets);
 
         if (multiAttackDamagePotential.numberOfKills > 0) {
-            multiAttackActionScore.score = 1;
+            multiAttackActionScore.score = .75;
             multiAttackActionScore.targets = targets;
         } else {
             //TODO: Get access to game state to avoid recalculating here.
@@ -251,7 +258,7 @@ class AIPlayer {
             for (let target of targets) {
                 totalCurrentHP += target.stats.currentHP;
             }
-            multiAttackActionScore.score = Utils.clamp(multiAttackDamagePotential.totalDamagePotential / totalCurrentHP, 0, 1);
+            multiAttackActionScore.score = Utils.clamp(.1 + (multiAttackDamagePotential.totalDamagePotential / totalCurrentHP), 0, 1);
             multiAttackActionScore.targets = targets;
         }
         return multiAttackActionScore;
@@ -286,10 +293,10 @@ class AIPlayer {
 
         //If it kills, weight very highly. Otherwise, do it proportional to damage potential
         if (bestMagicAttackDamagePotential.killsTarget) {
-            magicAttackActionScore.score = 1;
+            magicAttackActionScore.score = .75;
             magicAttackActionScore.targets = [bestMagicAttackDamagePotential.target];
         } else {
-            magicAttackActionScore.score = Utils.clamp(bestMagicAttackDamagePotential.damagePotential / bestMagicAttackDamagePotential.target.stats.currentHP, 0, 1);
+            magicAttackActionScore.score = Utils.clamp(.1 + (bestMagicAttackDamagePotential.damagePotential / bestMagicAttackDamagePotential.target.stats.currentHP), 0, 1);
             magicAttackActionScore.targets = [bestMagicAttackDamagePotential.target];
         }
         return magicAttackActionScore;
@@ -318,7 +325,7 @@ class AIPlayer {
         let multiMagicAttackDamagePotential = new MultiMagicAttackDamagePotential(actor, targets);
 
         if (multiMagicAttackDamagePotential.numberOfKills > 0) {
-            multiMagicAttackActionScore.score = 1;
+            multiMagicAttackActionScore.score = .75;
             multiMagicAttackActionScore.targets = targets;
 
         } else {
@@ -327,7 +334,7 @@ class AIPlayer {
             for (let target of targets) {
                 totalCurrentHP += target.stats.currentHP;
             }
-            multiMagicAttackActionScore.score = Utils.clamp(multiMagicAttackDamagePotential.totalDamagePotential / totalCurrentHP, 0, 1);
+            multiMagicAttackActionScore.score = Utils.clamp(.1 + (multiMagicAttackDamagePotential.totalDamagePotential / totalCurrentHP), 0, 1);
             multiMagicAttackActionScore.targets = targets;
         }
         return multiMagicAttackActionScore;
@@ -360,10 +367,11 @@ class AIPlayer {
         //disincentivize heals that massively overheal a character
         let overHealPunish = 0;
         if (bestHealPotential.overHeals) {
-            overHealPunish = (1 - bestHealPotential.overHealRatio);
+            overHealPunish = (1 - bestHealPotential.overHealRatio) ** 2;
         }
 
-        healActionScore.score = Utils.clamp(healUrgency - overHealPunish, 0, 1);
+        //add base incentive to heal
+        healActionScore.score = Utils.clamp(.25 + healUrgency - overHealPunish, 0, 1);
         healActionScore.targets = [bestHealPotential.target];
         return healActionScore;
     }
@@ -398,7 +406,7 @@ class AIPlayer {
             overHealPunish = (1 - multiHealPotential.overHealRatio);
         }
 
-        multiHealActionScore.score = Utils.clamp(healUrgency - overHealPunish, 0, 1);
+        multiHealActionScore.score = Utils.clamp(.25 + healUrgency - overHealPunish, 0, 1);
         multiHealActionScore.targets = targets;
         return multiHealActionScore;
     }

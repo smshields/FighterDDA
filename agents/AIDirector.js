@@ -8,29 +8,37 @@ const DirectorAction = require('../core/DirectorAction');
 class AIDirector {
     constructor(
         mode = 'inclusion',
+        difficultyMode = Constants.DIFFICULTY_BALANCE_MODE,
         targetActions = Constants.TARGET_ACTIONS,
-        difficultyAdjustmentScalar = Constants.DIFFICULTY_ADJUSTMENT_SCALAR,
+        hpDamageAdjustmentScalar = Constants.HP_DAMAGE_ADJUSTMENT_SCALAR,
         actionThreshold = 0,
         thresholdAdjustment = 20
     ) {
         this.maxBuffAmount = Constants.MAX_BUFF_AMOUNT;
-        this.maxNerfAmount = Constants.MIN_BUFF_AMOUNT;
+        this.maxNerfAmount = Constants.MAX_NERF_AMOUNT;
         this.gameState = {};
         this.mode = mode;
+        this.difficultyMode = difficultyMode;
 
         this.logger = new Logger();
 
         this.balanceMagnitude = 0;
         this.targetActions = targetActions;
-        this.difficultyAdjustmentScalar = difficultyAdjustmentScalar;
+        this.hpDamageAdjustmentScalar = hpDamageAdjustmentScalar;
+
+        // console.log("##########################################################");
+        // console.log("TARGET ACTIONS: " + this.targetActions);
+        // console.log("CONST TARGET ACTIONS: " + Constants.TARGET_ACTIONS);
+        // console.log("BASE CONST TARGET ACTIONS: " + Constants.BASE_TARGET_ACTIONS);
+        // console.log("##########################################################");
     }
 
     getRandomBuffAmount() {
-        return Math.floor(RNG.next() * this.maxBuffAmount);
+        return Math.floor(Math.random() * this.maxBuffAmount);
     }
 
     getRandomNerfAmount() {
-        return Math.floor(RNG.next() * this.maxNerfAmount);
+        return Math.floor(Math.random() * this.maxNerfAmount);
     }
 
 
@@ -47,16 +55,24 @@ class AIDirector {
         let balanceActions = {};
 
         //balance for both players in same direction if threshold has been passed and mode is difficulty
-        if (this.mode == 'difficulty') {
+        if (this.mode === 'difficulty') {
 
             if (this.gameState.actionCurrHPData.length >= 2) {
                 //return to this if we still are having major problems... see case if x is negative)
                 if (this.gameState.totalPlayerActions >= this.targetActions) {
-                    console.log("reached target action increment **************");
-                    console.log(this.targetActions);
-                    console.log(this.gameState.totalPlayerActions);
                     this.targetActions = this.gameState.totalPlayerActions + 5;
                 }
+            }
+
+            if (this.difficultyMode === 'player') {
+                // ***** STAT APPROACH *****
+
+                //if balance magnitude is negative - nerf player (lower their defense, raise opponents offense).
+                //if balance magnitude is positive - buff player (raise their defense, lower opponents offense).
+
+                //balance magnitude is representing damage per action needed to change from current line of best fit prediction
+                //since we are applying two balancing actions (one per player), we can safely divide magnitude in half
+                //need to convert DPA to relevant stat changes for damage balancing
 
                 //TODO: Refactor this into methods to reduce length of code in method.
                 //Get LoB for Player 1, current average sum
@@ -141,13 +157,6 @@ class AIDirector {
 
                 let p2BalanceMagnitude = p2DesiredYChange;
 
-                //if balance magnitude is negative - nerf player (lower their defense, raise opponents offense).
-                //if balance magnitude is positive - buff player (raise their defense, lower opponents offense).
-
-                //balance magnitude is representing damage per action needed to change from current line of best fit prediction
-                //since we are applying two balancing actions (one per player), we can safely divide magnitude in half
-                //need to convert DPA to relevant stat changes for damage balancing
-
                 //After doing some paper math, this is: change = desiredDPA - currentDPA
                 //Which is: change = desiredY - lineOfBestFitNextY
 
@@ -187,69 +196,82 @@ class AIDirector {
 
                 directorActions.push(directorActionP2);
 
-                //Debugging - How are we calculating magnitude of stat changes?
-
-                // console.log("GLOBAL DATA: ");
-                // console.log("TARGET ACTIONS: " + this.targetActions);
-                // console.log("TOTAL PLAYER ACTIONS: " + this.gameState.totalPlayerActions);
-
-                // console.log("LINE OF BEST FIT DATA P1: ");
-                // console.log(p1LineOfBestFitData);
-
-                // console.log("CHANGE MAGNITUDE P1: " + p1StatChangeMagnitude);
-                // console.log("CURRENT AVERAGE Y SUM P1: " + p1CurrentAvgSum);
-                // console.log("CURRENT SLOPE P1: " + p1LineOfBestFitSlope);
-                // console.log("CURRENT YINTERCEPT P1: " + p1LineOfBestFitYIntercept);
-                // console.log("CURRENT Y P1: " + p1LineOfBestFitY);
-                // console.log("NEXT CURRENT Y P1: " + p1LineOfBestFitNextY);
-                // console.log("TARGET X P1: " + p1TargetX1);
-                // console.log("TARGET Y P1: " + p1TargetY1);
-                // console.log("TARGET X2 P1: " + p1TargetX2);
-                // console.log("TARGET Y2 P1: " + p1TargetY2);
-                // console.log("TARGET P1 SLOPE: " + p1TargetSlope);
-                // console.log("NEXT TARGET Y P1: " + p1TargetNextY);
-                // console.log("DESIRED Y P1: " + p1DesiredY);
-                // console.log("P1 DESIRED Y CHANGE: " + p1DesiredYChange);
-                // console.log("P1 CURRENT HEALTH: " + this.gameState.player1Data.currentHP);
-
-                // console.log("LINE OF BEST FIT DATA P2: ");
-                // console.log(p2LineOfBestFitData);
-
-                // console.log("CHANGE MAGNITUDE P2: " + p2StatChangeMagnitude);
-                // console.log("CURRENT AVERAGE Y SUM P2: " + p2CurrentAvgSum);
-                // console.log("CURRENT SLOPE P2: " + p2LineOfBestFitSlope);
-                // console.log("CURRENT YINTERCEPT P2: " + p2LineOfBestFitYIntercept);
-                // console.log("CURRENT Y P2: " + p2LineOfBestFitY);
-                // console.log("NEXT CURRENT Y P2: " + p2LineOfBestFitNextY);
-                // console.log("TARGET X P2: " + p1TargetX1);
-                // console.log("TARGET Y P2: " + p2TargetY1);
-                // console.log("TARGET X2 P2: " + p2TargetX2);
-                // console.log("TARGET Y2 P2: " + p2TargetY2);
-                // console.log("TARGET P2 SLOPE: " + p2TargetSlope);
-                // console.log("NEXT TARGET Y P2: " + p2TargetNextY);
-                // console.log("CURRENT AVERAGE Y SUM P2: " + p2CurrentAvgSum);
-                // console.log("DESIRED Y P2: " + p2DesiredY);
-                // console.log("P2 DESIRED Y CHANGE: " + p2DesiredYChange);
-                // console.log("P2 CURRENT HEALTH: " + this.gameState.player2Data.currentHP);
-
-
-
                 return directorActions;
 
-                //TODO: change this to utility rolls for other things depending on gamestate (big feature add - HP, damage, luck, speed...)
+            } else if (this.difficultyMode === 'environment') {
+                // ***** SCALAR APPROACH *****
+
+                //Use totalHP instead of individual HP
+                let lineOfBestFitData = [];
+                let currentAvgSum = 0;
+
+                let tempData = this.gameState.actionCurrHPData.slice(-6);
+                for (let point of tempData) {
+                    currentAvgSum += point[3];
+                    lineOfBestFitData.push([point[0], point[3]]);
+                }
+
+                currentAvgSum = currentAvgSum / lineOfBestFitData.length;
+
+                //Fit Line
+                let lineOfBestFit = ss.linearRegression(lineOfBestFitData);
+                let lineOfBestFitSlope = lineOfBestFit.m;
+                let lineOfBestFitYIntercept = lineOfBestFit.b;
+
+                //Target Line
+                let targetX1 = 0;
+                let targetY1 = this.gameState.currentHP;
+                let targetX2 = this.targetActions - this.gameState.totalPlayerActions;
+                let targetY2 = 0;
+
+                let targetSlope = Utils.safeDivide((targetY2 - targetY1), (targetX2 - targetX1));
+                let targetYIntercept = targetY1;
+                let lineOfBestFitY = (lineOfBestFitSlope * this.gameState.totalPlayerActions) + lineOfBestFitYIntercept;
+
+                //Get next point on line for LoB, Target
+                let lineOfBestFitNextX = this.gameState.totalPlayerActions + 1;
+                let lineOfBestFitNextY = (lineOfBestFitSlope * lineOfBestFitNextX) + lineOfBestFitYIntercept;
+
+                let targetNextX = 1;
+                let targetNextY = targetSlope + targetYIntercept;
+
+                //predict where next Y needs to be based on both points
+                let yChange = targetNextY - lineOfBestFitNextY;
+                let desiredY = currentAvgSum + yChange;
+
+                // console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+                // console.log("desired Y: " + desiredY);
+                // console.log("next fit Y: " + lineOfBestFitNextY);
+                // console.log("current action: " + this.gameState.totalPlayerActions);
+                // console.log("target action: " + this.targetActions);
+                // console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+
+                //Get a ratio of the distance between the line of fit next y and desired y.
+                //Flip ratio depending if we are negative or positive, indicating if we should be > or < 1 for scaling
+                let desiredToLoBYDistance = lineOfBestFitNextY - desiredY;
+                //Determine ratio numerator/denominator by exponent; 1 or -1
+                let ratioExponent = Math.abs(desiredToLoBYDistance) / desiredToLoBYDistance;
+                //Get ratio
+                let yChangeRatio = Math.pow(lineOfBestFitNextY / desiredToLoBYDistance, ratioExponent);
+
+                //We don't need to check for buff or nerf as they should already be scaled appropriately.
+                //TODO: We're currently wrapping all scalar adjustments in this method, we'll probably eventually want to refactor.
+                let directorAction = this.adjustScalars(yChangeRatio);
+                return directorAction;
 
             } else {
-                balanceMessage += `Not enough action data to calculate balance adjustment.`;
-                this.logger.logAction(balanceMessage);
+                this.logger.logError("AIDirector - balanceGame: Invalid difficulty mode specified! " + this.difficultyMode);
                 return [];
             }
-
-
         }
 
         if (this.mode == 'inclusion') {
             let losingPlayer = null;
             let winningPlayer = null;
+
+            let hpTie = false;
+            let luckTie = false;
+            let speedTie = false;
 
             const player1LivingRatio = player1Living / player1.characters.length;
             const player2LivingRatio = player2Living / player2.characters.length;
@@ -263,7 +285,10 @@ class AIDirector {
             } else if (player1WinValue < player2WinValue) {
                 losingPlayer = player1;
                 winningPlayer = player2;
+            } else {
+                hpTie = true;
             }
+
 
             balanceActions['hp'] = Math.abs(player1WinValue - player2WinValue);
 
@@ -279,6 +304,8 @@ class AIDirector {
             } else if (player1SpeedValue < player2SpeedValue) {
                 slowPlayer = player1;
                 fastPlayer = player2;
+            } else {
+                speedTie = true;
             }
 
             balanceActions['speed'] = Math.abs(player1SpeedValue - player2SpeedValue);
@@ -295,6 +322,8 @@ class AIDirector {
             } else if (player1LuckValue < player2LuckValue) {
                 unluckyPlayer = player1;
                 luckyPlayer = player2;
+            } else {
+                luckTie = true;
             }
 
             balanceActions['luck'] = Math.abs(player1LuckValue - player2LuckValue);
@@ -311,25 +340,36 @@ class AIDirector {
             balanceActions['luck'] = Utils.map(balanceActions['luck'], 0, valueSum, 0, 1);
             balanceActions['speed'] = Utils.map(balanceActions['speed'], 0, valueSum, 0, 1);
 
+            if (!hpTie) {
+                let randomNumber = RNG.next();
+                if(randomNumber < .5){
+                    return this.balanceHP(winningPlayer, losingPlayer);
+                } else {
+                    return this.balanceCurrHP(winningPlayer, losingPlayer);
+                }
+            } else {
+                this.logger.logError("AIDirector - balanceGame: No HP impalance! No action taken.");
+                return;
+            }
+
+
+            //TODO: Tune for targeting other stats.
             let randomNumber = RNG.next();
             let cumulativeValue = 0;
 
             cumulativeValue += balanceActions['hp'];
             if (randomNumber < cumulativeValue) {
-                this.balanceHP(winningPlayer, losingPlayer, log, actionQueue);
-                return;
+                return this.balanceHP(winningPlayer, losingPlayer);
             }
 
             cumulativeValue += balanceActions['luck'];
             if (randomNumber < cumulativeValue) {
-                this.balanceLuck(luckyPlayer, unluckyPlayer, log, actionQueue);
-                return;
+                return this.balanceLuck(luckyPlayer, unluckyPlayer);
             }
 
             cumulativeValue += balanceActions['speed'];
             if (randomNumber < cumulativeValue) {
-                this.balanceSpeed(fastPlayer, slowPlayer, log, actionQueue);
-                return;
+                return this.balanceSpeed(fastPlayer, slowPlayer);
             }
         }
     }
@@ -456,6 +496,28 @@ class AIDirector {
         return avgDPA;
     }
 
+    adjustScalars(ratio) {
+
+        let playerNum = [1, 2];
+        let stats = ['DamageScalar', 'HealScalar'];
+        let type = "environment";
+        if (ratio > 1) {
+            type = "environment buff";
+        } else if (ratio < 1) {
+            type = "environment nerf";
+        } else if (ratio === 1) {
+            type = "environment constant"
+        } else if (ratio < 0) {
+            this.logger.logError("AI Director - AdjustScalars: Environment change ratio somehow negative! " + ratio);
+        } else {
+            this.logger.logError("AI Director - AdjustScalars: Environment change ratio invalid! " + ratio);
+        }
+        let characterTargets = [];
+        let statChange = ratio;
+
+        return new DirectorAction(type, playerNum, characterTargets, stats, statChange);
+    }
+
     adjustAttack(player, statChange) {
         let playerLivingCharacters = player.characters.filter(char => char.isAlive());
         if (playerLivingCharacters.length === 0) {
@@ -496,51 +558,46 @@ class AIDirector {
     }
 
 
-    balanceCurrHP(player1, player2, log, actionQueue) {
+    balanceCurrHP(winningPlayer, losingPlayer) {
         //check for living characters
-        const player1LivingCharacters = player1.characters.filter(char => char.isAlive());
-        const player2LivingCharacters = player2.characters.filter(char => char.isAlive());
+        const aliveWinningCharacters = winningPlayer.characters.filter(char => char.isAlive());
+        const aliveLosingCharacters = losingPlayer.characters.filter(char => char.isAlive());
 
-        if (player1LivingCharacters.length === 0 || player2LivingCharacters === 0) {
+        if (aliveLosingCharacters.length === 0 || aliveWinningCharacters.length === 0) {
             console.log("AI Director: One team is defeated, no need to balance.");
             return;
         }
 
+        const winningPlayerNum = aliveWinningCharacters[0].playerNumber;
+        const losingPlayerNum = aliveLosingCharacters[0].playerNumber;
 
-        //get raw amount to balance
+        //get raw amount to to deal/heal
         const rawStatChangeAmount = this.getRandomBuffAmount();
-        //buffer against the magnitude of the difference between target and desired
-        const statChange = rawStatChangeAmount * Math.abs(this.balanceMagnitude) * this.difficultyAdjustmentScalar;
-        //Concatenate character arrays as we are targeting all characters
-        const targets = player1.characters.concat(player2.characters);
-        //Add player strings together
-        const playerNum = player1LivingCharacters[0].player + ", " + player2LivingCharacters[0].player;
+        //Scale down so balancing isn't insta-killing a player
+        const statChange = rawStatChangeAmount * this.hpDamageAdjustmentScalar;
 
-        if (this.balanceMagnitude <= 0) {
-            const healAction = {
-                type: 'heal',
-                targets: targets,
-                stats: ['currentHP'],
-                amount: statChange,
-                playerNum: playerNum
-            }
-            return healAction;
-            //actionQueue.push(healAction);
-        } else { //negative, buff
-            const damageAction = {
-                type: 'damage',
-                targets: targets,
-                stats: ['currentHP'],
-                amount: statChange,
-                playerNum: playerNum
-            }
-            return damageAction;
-            //actionQueue.push(damageAction);
+        let stats = ['currentHP'];
+        let type = "";
+
+        let healAction = new DirectorAction('heal', losingPlayerNum, aliveLosingCharacters, stats, statChange);
+        let damageAction = new DirectorAction('damage', winningPlayerNum, aliveWinningCharacters, stats, statChange);
+
+        const randomNumber = RNG.next();
+
+        //randomly choose to heal loser, damage winner, or both
+        if (randomNumber <= .33) { //heal
+            return [healAction];
+        } else if (randomNumber <= .66) { //damage
+            return [damageAction];
+        } else { //both
+            return [healAction, damageAction];
         }
+
+
 
     }
 
-    balanceHP(winningPlayer, losingPlayer, log, actionQueue) {
+    balanceHP(winningPlayer, losingPlayer) {
         //check for lviing characters
         const aliveWinningCharacters = winningPlayer.characters.filter(char => char.isAlive());
         const aliveLosingCharacters = losingPlayer.characters.filter(char => char.isAlive());
@@ -550,44 +607,31 @@ class AIDirector {
             return;
         }
 
-        const winningPlayerNum = aliveWinningCharacters[0].player;
-        const losingPlayerNum = aliveLosingCharacters[0].player;
+        const winningPlayerNum = aliveWinningCharacters[0].playerNumber;
+        const losingPlayerNum = aliveLosingCharacters[0].playerNumber;
 
         //specify stats to buff and values of buff
-        const statsToBuff = ['Attack', 'Defense'];
-        const statsToNerf = ['Attack', 'Defense'];
+        const stats = ['Attack', 'MagicAttack', 'MagicDefense', 'Defense'];
         const buffAmount = this.getRandomBuffAmount();
         const nerfAmount = this.getRandomNerfAmount();
 
-        //format actions
-        const buffAction = {
-            type: 'buff',
-            targets: aliveLosingCharacters,
-            stats: statsToBuff,
-            amount: buffAmount,
-            playerNum: losingPlayerNum
-        };
-        const nerfAction = {
-            type: 'nerf',
-            targets: aliveWinningCharacters,
-            stats: statsToNerf,
-            amount: nerfAmount,
-            playerNum: winningPlayerNum
-        };
+        let buffAction = new DirectorAction('buff', losingPlayerNum, aliveLosingCharacters, stats, buffAmount);
+        let nerfAction = new DirectorAction('nerf', winningPlayerNum, aliveWinningCharacters, stats, nerfAmount);
+
 
         const randomNumber = RNG.next();
 
         //randomly choose to buff, nerf, or both
         if (randomNumber <= .33) { //buff
-            actionQueue.push(buffAction);
+            return [buffAction];
         } else if (randomNumber <= .66) { //nerf
-            actionQueue.push(nerfAction);
+            return [nerfAction];
         } else { //both
-            actionQueue.push(buffAction);
-            actionQueue.push(nerfAction);
+            return [buffAction, nerfAction];
         }
     }
-    balanceSpeed(fastPlayer, slowPlayer, log, actionQueue) {
+
+    balanceSpeed(fastPlayer, slowPlayer) {
         //check for lviing characters
         const aliveFastCharacters = fastPlayer.characters.filter(char => char.isAlive());
         const aliveSlowCharacters = slowPlayer.characters.filter(char => char.isAlive());
@@ -597,44 +641,32 @@ class AIDirector {
             return;
         }
 
-        const fastPlayerNum = aliveFastCharacters[0].player;
-        const slowPlayerNum = aliveSlowCharacters[0].player;
+        const fastPlayerNum = aliveFastCharacters[0].playerNumber;
+        const slowPlayerNum = aliveSlowCharacters[0].playerNumber;
 
         //specify stats to buff and values of buff
-        const statsToBuff = ['Speed'];
-        const statsToNerf = ['Speed'];
+        const stats = ['Speed'];
         const buffAmount = this.getRandomBuffAmount();
         const nerfAmount = this.getRandomNerfAmount();
 
-        //format actions
-        const buffAction = {
-            type: 'buff',
-            targets: aliveSlowCharacters,
-            stats: statsToBuff,
-            amount: buffAmount,
-            playerNum: slowPlayerNum
-        };
-        const nerfAction = {
-            type: 'nerf',
-            targets: aliveFastCharacters,
-            stats: statsToNerf,
-            amount: nerfAmount,
-            playerNum: fastPlayerNum
-        };
+        let buffAction = new DirectorAction('buff', slowPlayerNum, aliveSlowCharacters, stats, buffAmount);
+        let nerfAction = new DirectorAction('nerf', fastPlayerNum, aliveFastCharacters, stats, nerfAmount);
+
+        console.log("SPEED BALANCE STATCHANGE: " + buffAmount + ", " + nerfAmount);
 
         const randomNumber = RNG.next();
 
         //randomly choose to buff, nerf, or both
         if (randomNumber <= .33) { //buff
-            actionQueue.push(buffAction);
+            return [buffAction];
         } else if (randomNumber <= .66) { //nerf
-            actionQueue.push(nerfAction);
+            return [nerfAction];
         } else { //both
-            actionQueue.push(buffAction);
-            actionQueue.push(nerfAction);
+            return [buffAction, nerfAction];
         }
     }
-    balanceLuck(luckyPlayer, unluckyPlayer, log, actionQueue) {
+
+    balanceLuck(luckyPlayer, unluckyPlayer) {
         //check for lviing characters
         const aliveLuckyCharacters = luckyPlayer.characters.filter(char => char.isAlive());
         const aliveUnluckyCharacters = unluckyPlayer.characters.filter(char => char.isAlive());
@@ -644,80 +676,30 @@ class AIDirector {
             return;
         }
 
-        if (this.mode == 'inclusion') {
+        const luckyPlayerNum = aliveLuckyCharacters[0].playerNumber;
+        const unluckyPlayerNum = aliveUnluckyCharacters[0].playerNumber;
 
-            const luckyPlayerNum = aliveLuckyCharacters[0].player;
-            const unluckyPlayerNum = aliveUnluckyCharacters[0].player;
+        //specify stats to buff and values of buff
+        const stats = ['Luck'];
+        const buffAmount = this.getRandomBuffAmount();
+        const nerfAmount = this.getRandomNerfAmount();
 
-            //specify stats to buff and values of buff
-            const statsToBuff = ['Luck'];
-            const statsToNerf = ['Luck'];
-            const buffAmount = this.getRandomBuffAmount();
-            const nerfAmount = this.getRandomNerfAmount();
+        let buffAction = new DirectorAction('buff', unluckyPlayerNum, aliveUnluckyCharacters, stats, buffAmount);
+        let nerfAction = new DirectorAction('nerf', luckyPlayerNum, aliveLuckyCharacters, stats, nerfAmount);
 
-            //format actions
-            const buffAction = {
-                type: 'buff',
-                targets: aliveUnluckyCharacters,
-                stats: statsToBuff,
-                amount: buffAmount,
-                playerNum: unluckyPlayerNum
-            };
-            const nerfAction = {
-                type: 'nerf',
-                targets: aliveLuckyCharacters,
-                stats: statsToNerf,
-                amount: nerfAmount,
-                playerNum: luckyPlayerNum
-            };
+        console.log("LUCK BALANCE STATCHANGE: " + buffAmount + ", " + nerfAmount);
 
-            const randomNumber = RNG.next();
+        const randomNumber = RNG.next();
 
-            //randomly choose to buff, nerf, or both
-            if (randomNumber <= .33) { //buff
-                actionQueue.push(buffAction);
-            } else if (randomNumber <= .66) { //nerf
-                actionQueue.push(nerfAction);
-            } else { //both
-                actionQueue.push(buffAction);
-                actionQueue.push(nerfAction);
-            }
-        } else if (this.mode == 'difficulty') {
-            const statsToBalance = ['Luck'];
-            //get raw amount to balance
-            const rawStatChangeAmount = this.getRandomBuffAmount();
-            //buffer against the magnitude of the difference between target and desired
-            const statChange = rawStatChangeAmount * Math.abs(this.balanceMagnitude) * this.difficultyAdjustmentScalar;
-            //Concatenate character arrays as we are targeting all characters
-            const targets = aliveLuckyCharacters.concat(aliveUnluckyCharacters);
-            //Add player strings together
-            const playerNum = aliveLuckyCharacters[0].player + ", " + aliveUnluckyCharacters[0].player;
-
-
-            //if actionChangeDifference positive, nerf
-            if (this.balanceMagnitude <= 0) {
-                const buffAction = {
-                    type: 'buff',
-                    targets: targets,
-                    stats: statsToBalance,
-                    amount: statChange,
-                    playerNum: playerNum
-                }
-                actionQueue.push(buffAction);
-            } else { //negative, buff
-                const nerfAction = {
-                    type: 'nerf',
-                    targets: targets,
-                    stats: statsToBalance,
-                    amount: statChange,
-                    playerNum: playerNum
-                }
-                actionQueue.push(nerfAction);
-            }
-        } else {
-            console.log("No valid balancing mode specified!");
-            return;
+        //randomly choose to buff, nerf, or both
+        if (randomNumber <= .33) { //buff
+            return [buffAction];
+        } else if (randomNumber <= .66) { //nerf
+            return [nerfAction];
+        } else { //both
+            return [buffAction, nerfAction];
         }
+
     }
 
 }

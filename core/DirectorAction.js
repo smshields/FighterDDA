@@ -2,7 +2,7 @@
  * 
  * TODO - FEATURES:
  * - Make it so character buffs are unique and track appropriately (will probably need new object) 
- *
+ * - Make an inherited class to handle environment actions
  * */
 
 let Constants = require('../utils/Constants');

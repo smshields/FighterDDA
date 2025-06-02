@@ -102,7 +102,7 @@ class Utils {
      * @returns {double} maximum possible raw heal.
      * */
     static mapDefenseStatsToHeal(actor, scalar) {
-        return (actor.stats.Defense + actor.stats.MagicDefense) / 2;
+        return ((actor.stats.Defense + actor.stats.MagicDefense) / 2) * scalar;
     }
 
     //TODO: Refactor parabolic scaling here to make it so other curves can be plugged in.

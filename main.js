@@ -13,7 +13,6 @@ const TeamFactory = require('./core/TeamFactory');
 // New function to run repeated simulations
 function runRepeatedSimulations(
     numSimulations = 1,
-    aiDirector = new AIDirector('difficulty'),
     seed = 1234,
     directorActionInterval = 3,
     actionExecutionInterval = 3
@@ -54,7 +53,7 @@ function runRepeatedSimulations(
         team1.characters.forEach(character => character.player = team1);
         team2.characters.forEach(character => character.player = team2);
 
-        const game = new Game([team1, team2], aiDirector, directorActionInterval, actionExecutionInterval);
+        const game = new Game([team1, team2], new AIDirector('difficulty'), directorActionInterval, actionExecutionInterval);
         game.logger.outputDirectory = simulationDirectory;
         const results = game.runSimulation();
 
@@ -75,18 +74,20 @@ function runRepeatedSimulations(
             totalDraws++;
         }
 
-        console.log(`****************************************`);
-        console.log(`************** GAME OVER! **************`);
-        console.log(`****************************************`);
+        //TODO: Fix this so a logger use is possible.
+        console.log(Constants.GAME_OVER_CONSOLE_FORMATTING, `****************************************`);
+        console.log(Constants.GAME_OVER_CONSOLE_FORMATTING, `************** GAME OVER! **************`);
+        console.log(Constants.GAME_OVER_CONSOLE_FORMATTING, `****************************************`);
 
-        console.log(`${winner} is the winning Player!`);
-        console.log(`Total Actions: ${results.totalActions}`);
-        console.log(`Total Time Steps: ${results.totalTimeSteps}`);
+        console.log(Constants.GAME_OVER_CONSOLE_FORMATTING, `${winner} is the winning Player!`);
+        console.log(Constants.GAME_OVER_CONSOLE_FORMATTING, `Total Actions: ${results.totalActions}`);
+        console.log(Constants.GAME_OVER_CONSOLE_FORMATTING, `Total Time Steps: ${results.totalTimeSteps}`);
 
-        console.log(`****************************************`);
-        console.log(`************** NEW GAME!! **************`);
-        console.log(`****************************************`);
-
+        if (i + 1 < numSimulations) {
+            console.log(Constants.GAME_OVER_CONSOLE_FORMATTING, `****************************************`);
+            console.log(Constants.GAME_OVER_CONSOLE_FORMATTING, `************** NEW GAME!! **************`);
+            console.log(Constants.GAME_OVER_CONSOLE_FORMATTING, `****************************************`);
+        }
         delete game;
     }
 
@@ -127,4 +128,4 @@ agent2.characters.forEach(character => character.player = agent2);
 //game.runSimulation();
 
 // Run repeated simulations
-runRepeatedSimulations(100, new AIDirector('difficulty'), 1234, 20, 3);
+runRepeatedSimulations(1000, 1234, 20, 3);

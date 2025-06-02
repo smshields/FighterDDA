@@ -93,7 +93,7 @@ class Game {
             this.gameState.totalPlayerActions,
             this.gameState.player1Data.currentHP,
             this.gameState.player2Data.currentHP,
-            this.gameState.currentTotalHP
+            this.gameState.currentHP
         ]); //update based on array
     }
 
@@ -144,15 +144,15 @@ class Game {
             let action = this.gameState.actionQueue.shift();
 
             //TODO: Clean up this if statement with a better checking method
-            if (action.type != 'buff' || action.type != 'nerf' || action.type != 'heal' || action.type != 'damage') {
+            if (!Constants.DIRECTOR_ACTION_TYPES.includes(action.type)) {
                 let actionLog = this.executeAction(action);
                 timeStepLog.actionsExecuted.push(actionLog); // Handle character actions, push details to log
-                const currentTotalHP = this.gameState.player1Data.currentHP + this.gameState.player2Data.currentHP;
+                this.gameState.currentHP = this.gameState.player1Data.currentHP + this.gameState.player2Data.currentHP;
                 this.gameState.actionCurrHPData.push([
                     this.gameState.totalPlayerActions,
                     this.gameState.player1Data.currentHP,
                     this.gameState.player2Data.currentHP,
-                    this.gameState.currentTotalHP
+                    this.gameState.currentHP
                 ]); //update based on array
             }
         }
@@ -166,9 +166,9 @@ class Game {
                 directorActions = [directorActions];
             }
 
-            directorActions = directorActions.filter(Boolean); //remove null (caused by invalid changes)
 
             if (directorActions) {
+                directorActions = directorActions.filter(Boolean); //remove null (caused by invalid changes)
                 for (let action of directorActions) {
                     let directorActionLog = this.executeAIDirectorAction(action);
                     timeStepLog.directorActions.push(directorActionLog); //Handle director actions, push details to log
@@ -364,7 +364,7 @@ class Game {
                 }
         }
 
-        this.logger.logAction(actionMessage);
+        this.logger.logAction(actionMessage, Constants.ACTION_CONSOLE_FORMATTING);
 
         //TODO: Check if I need this...
         aliveTargets.forEach(target => {
@@ -374,7 +374,7 @@ class Game {
         });
 
         defeatedCharacters.forEach(target => {
-            this.logger.logAction(`Game - executeAction: ${target.playerNumber}'s ${target.name} has been killed!`);
+            this.logger.logAction(`Game - executeAction: ${target.playerNumber}'s ${target.name} has been killed!`, Constants.CHARACTER_KILLED_CONSOLE_FORMATTING);
         });
 
         return characterActionOutcomeLog;
@@ -388,18 +388,24 @@ class Game {
         if (action.type === 'buff' || action.type === 'nerf') {
             for (let target of action.characterTargets) {
                 for (let stat of action.stats) {
+                    let statChange = action.statChange;
+                    if(action.type === 'nerf'){
+                        statChange = -1 * statChange;
+                    }
+
+
                     switch (target.name) {
                         case 'warrior':
-                            this.updateWarriorStat(target, stat, action.statChange);
+                            this.updateWarriorStat(target, stat, statChange);
                             break;
                         case 'mage':
-                            this.updateMageStat(target, stat, action.statChange);
+                            this.updateMageStat(target, stat, statChange);
                             break;
                         case 'priest':
-                            this.updatePriestStat(target, stat, action.statChange);
+                            this.updatePriestStat(target, stat, statChange);
                             break;
                         case 'rogue':
-                            this.updateRogueStat(target, stat, action.statChange);
+                            this.updateRogueStat(target, stat, statChange);
                             break;
                         default:
                             this.logger.logError(`Game - executeAIDirectorAction: No valid target/stat to ${action.type}. Attempted to ${action.type} ${stat}`);
@@ -408,26 +414,36 @@ class Game {
                     actionMessage += ` ${action.type} player ${target.playerNumber}'s ${target.name}'s ${stat} by ${action.statChange}. New value: ${target.stats[stat]}`;
                 }
             }
+        } else if (action.type === 'environment buff' || action.type === 'environment nerf') {
+            let prevDamageScalar = Constants.SINGLE_TARGET_SCALAR;
+            let prevMultiDamageScalar = Constants.MULTI_TARGET_SCALAR;
+            let prevHealScalar = Constants.HEAL_SCALAR;
+            let prevMultiHealScalar = Constants.MULTI_HEAL_SCALAR;
+            this.updateScalars(action.statChange);
+            actionMessage += `${action.type} updates 
+            HEAL_SCALAR from ${prevHealScalar} to ${Constants.HEAL_SCALAR}. 
+            MULTI_HEAL_SCALAR from ${prevMultiHealScalar} to ${Constants.MULTI_HEAL_SCALAR}. 
+            SINGLE_TARGET_SCALAR from ${prevDamageScalar} to ${Constants.SINGLE_TARGET_SCALAR}. 
+            MULTI_TARGET_SCALAR from ${prevMultiDamageScalar} to ${Constants.MULTI_TARGET_SCALAR}.`
 
-            //TODO - ADDITIONAL DIRECTOR ACTIONS
         } else if (action.type === 'heal') {
-            for (let target of targets) {
+            for (let target of action.characterTargets) {
                 //TODO: refactor out
-                target.stats['currentHP'] += amount;
+                target.stats['currentHP'] += action.statChange;
                 target.stats['currentHP'] = Math.min(target.baseStats['HP'], target.stats['currentHP']);
-                actionMessage += ` healing 'currentHP' by ${amount}. New value: ${target.stats['currentHP']}`;
+                actionMessage += ` healing 'currentHP' by ${action.statChange}. New value: ${target.stats['currentHP']}`;
             }
         } else if (action.type === 'damage') {
             //TODO: refactor out
-            for (let target of targets) {
-                target.stats['currentHP'] -= amount;
+            for (let target of action.characterTargets) {
+                target.stats['currentHP'] -= action.statChange;
                 target.stats['currentHP'] = Math.max(0, target.stats['currentHP']);
-                actionMessage += ` damaging 'currentHP' by ${amount}. New value: ${target.stats['currentHP']}`;
+                actionMessage += ` damaging 'currentHP' by ${action.statChange}. New value: ${target.stats['currentHP']}`;
             }
         }
 
         //Log action
-        this.logger.logAction(actionMessage);
+        this.logger.logAction(actionMessage, Constants.DIRECTOR_CONSOLE_FORMATTING);
 
         //return execution details
         return new DirectorActionOutcomeLog(action, this.gameState.timeStep);
@@ -453,8 +469,9 @@ class Game {
             totalActions: this.gameState.totalPlayerActions
         }
 
-        //TODO - this is so ugly...
-        //cleanup singletons
+        //TODO - this is so ugly; need to manage global state better
+        //cleanup singletons, constant settings
+        this.gameState.resetScalars();
         this.gameState.deleteSingletonInstance();
         this.logger.deleteSingletonInstance();
 
@@ -494,6 +511,26 @@ class Game {
                 console.log("Invalid stat specified to change.");
                 break;
         }
+    }
+
+    updateScalars(change) {
+        //clamp to avoid insane scalar changes
+        let clampedChange = change;
+        //TODO: Is this allowing too sudden of changes?
+        if (change >= 4) {
+            clampedChange = 4;
+        }
+
+        if (change < .25) {
+            clampedChange = .25;
+        }
+
+        //apply to damage
+        Constants.SINGLE_TARGET_SCALAR = Utils.clamp(Constants.SINGLE_TARGET_SCALAR * clampedChange, Constants.MIN_SINGLE_TARGET_SCALAR, Constants.MAX_SINGLE_TARGET_SCALAR);
+        Constants.MULTI_TARGET_SCALAR = Utils.clamp(Constants.MULTI_TARGET_SCALAR * clampedChange, Constants.MIN_MULTI_TARGET_SCALAR, Constants.MAX_MULTI_TARGET_SCALAR);
+        //healing is inverse of damage
+        Constants.HEAL_SCALAR = Utils.clamp(Constants.HEAL_SCALAR / clampedChange, Constants.MIN_HEAL_SCALAR, Constants.MAX_HEAL_SCALAR);
+        Constants.MULTI_HEAL_SCALAR = Utils.clamp(Constants.MULTI_HEAL_SCALAR / clampedChange, Constants.MIN_MULTI_HEAL_SCALAR, Constants.MAX_MULTI_HEAL_SCALAR);
     }
 
     updateWarriorStat(target, stat, change) {
