@@ -39,15 +39,20 @@ class Logger {
         this.endLog = {};
     }
 
-    logToConsole(message) {
+    logToConsole(message, formatting = null) {
         if (Constants.CONSOLE_LOGGING_ENABLED) {
-            console.log(`TIMESTEP ${this.gameState.timeStep}: ` + message);
+            let annotatedMessage = `TIMESTEP ${this.gameState.timeStep}: ` + message;
+            if(formatting){
+                console.log(formatting, annotatedMessage);
+            } else {
+                console.log(annotatedMessage);
+            }
         }
     }
 
     //TODO: Should I have a warning method as well?
     logError(message) {
-        this.logToConsole(message);
+        this.logToConsole(message, Constants.ERROR_CONSOLE_FORMATTING);
         let annotatedMessage = `TIMESTEP ${this.gameState.timeStep}: ` + message;
         this.errorLog.push(annotatedMessage);
         if (Constants.HALT_ON_ERROR) {
@@ -55,8 +60,8 @@ class Logger {
         }
     }
 
-    logAction(message) {
-        this.logToConsole(message);
+    logAction(message, formatting = null) {
+        this.logToConsole(message, formatting);
         let annotatedMessage = `TIMESTEP ${this.gameState.timeStep}: ` + message;
         this.actionLog.push(annotatedMessage);
 

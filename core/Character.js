@@ -94,6 +94,15 @@ class Character {
         //map back onto HP range, multiply by game scalar.
         let damage = (Utils.map(curvedDamage, 0, 1, Constants.MIN_HP, Constants.MAX_HP)) * scalar;
         damage = Utils.round(damage, 2);
+
+        //Manage Floors
+        if (scalar === Constants.SINGLE_TARGET_SCALAR && damage < 4) {
+            damage = 4;
+        }
+        if (scalar === Constants.MULTI_TARGET_SCALAR && damage < 1) {
+            damage = 1;
+        }
+
         //assign damage to target.
         target.takeDamage(damage);
 
@@ -128,6 +137,17 @@ class Character {
         //map back onto HP range, multiply by game scalar.
         let damage = (Utils.map(curvedDamage, 0, 1, Constants.MIN_HP, Constants.MAX_HP)) * scalar;
         damage = Utils.round(damage, 2);
+
+        //Manage Floors
+        if (scalar === Constants.SINGLE_TARGET_SCALAR && damage < 4) {
+            damage = 4;
+        }
+        if (scalar === Constants.MULTI_TARGET_SCALAR && damage < 1) {
+            damage = 1;
+        }
+
+        damage = Utils.round(damage);
+
         //assign damage to target.
         target.takeDamage(Math.floor(damage));
 
@@ -151,7 +171,21 @@ class Character {
         let minHeal = (avgDef * (this.stats.Luck / 100) * (target.stats.Luck / 100));
         //randomly pick (based off of game seed) a value between minimum possible heal and average defense, tune against scalar, consider target's luck
         let rawHeal = Utils.round((minHeal + ((avgDef - minHeal) * RNG.next())) * scalar, 2);
+
+        //Manage Floors
+        if (scalar === Constants.HEAL_SCALAR && rawHeal < 4) {
+            rawHeal = 4;
+        }
+        if (scalar === Constants.MULTI_HEAL_SCALAR && rawHeal < 1) {
+            rawHeal = 1;
+        }
+
         let heal = Math.min(target.stats.HP - target.stats.currentHP, rawHeal);
+
+
+
+        heal = Utils.round(heal);
+
         target.stats.currentHP += heal;
 
         //TODO: Damage recieved tracking

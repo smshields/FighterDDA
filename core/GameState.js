@@ -191,6 +191,14 @@ class GameState {
         }
     }
 
+    //TODO: refactor dynamic scalar logic entirely to this class
+    resetScalars(){
+        Constants.SINGLE_TARGET_SCALAR = Constants.BASE_SINGLE_TARGET_SCALAR;
+        Constants.MULTI_TARGET_SCALAR = Constants.BASE_MULTI_TARGET_SCALAR;
+        Constants.HEAL_SCALAR = Constants.BASE_HEAL_SCALAR;
+        Constants.MULTI_HEAL_SCALAR = Constants.MULTI_HEAL_SCALAR;
+    }
+
     //player = 1, 2, or 0 (0 means from all)
     getLowestHPCharacter(player) {
         if (player === 1) {

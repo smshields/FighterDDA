@@ -5,6 +5,7 @@
  * TODO - DEPRECATE/REWRITE:
  * mapRawDamageToDamage, mapDamageToRawDamage
  */
+const RNG = require('./RNG');
 const Constants = require('./Constants');
 
 /** A static classed containing generic helper functions. */
@@ -31,7 +32,7 @@ class Utils {
      * @returns {Object} a random element from the array
      */
     static getRandomElement(array) {
-        return array[Math.floor(Math.random() * array.length)];
+        return array[Math.floor(RNG.next() * array.length)];
     }
 
     /** Finds slope between two points
@@ -102,7 +103,7 @@ class Utils {
      * @returns {double} maximum possible raw heal.
      * */
     static mapDefenseStatsToHeal(actor, scalar) {
-        return (actor.stats.Defense + actor.stats.MagicDefense) / 2;
+        return ((actor.stats.Defense + actor.stats.MagicDefense) / 2) * scalar;
     }
 
     //TODO: Refactor parabolic scaling here to make it so other curves can be plugged in.
