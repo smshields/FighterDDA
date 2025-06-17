@@ -141,3 +141,4 @@ dist
 .pnp.*
 /tools/visuals
 tools/wip_code.py
+/tools/OutputArchive
