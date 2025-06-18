@@ -24,7 +24,7 @@ class EndLog {
         this.numDirectorChanges = -1;
         this.numLeadChangesByRatio = -1;
         this.numLeadChangesByValue = -1;
-        this.player1To2ActionRatio = -1; //Number of player 1 actions for each player 2 action
+        this.playerActionRatio = -1; //Represents action imbalance (e.g. if one player acts twice as often, return 2)
         this.winningPlayerRemainingHP = -1;
         this.directorStatChangeAverageAbsolute = -1;
         this.directorStatChangeAverageBuff = -1;
@@ -48,7 +48,7 @@ class EndLog {
         this.numLeadChangesByValue = leadChangeData.numLeadChangesByValue;
 
         //Action Ratio
-        this.player1To2ActionRatio = this.calculatePlayerActionRatio();
+        this.playerActionRatio = this.calculatePlayerActionRatio();
 
         //Winning player remaining HP
         this.winningPlayerRemainingHP = this.calculateRemainingHPForWinner();
@@ -117,7 +117,11 @@ class EndLog {
     }
 
     calculatePlayerActionRatio() {
-        return this.gameState.player1Data.actions / this.gameState.player2Data.actions;
+        let ratio = this.gameState.player1Data.actions / this.gameState.player2Data.actions;
+        if(ratio < 1){
+            ratio = 1 / ratio;
+        }
+        return ratio; 
     }
 
     calculateNumLeadChanges() {
@@ -207,7 +211,7 @@ class EndLog {
             numDirectorChanges: this.numDirectorChanges,
             numLeadChangesByRatio: this.numLeadChangesByRatio,
             numLeadChangesByValue: this.numLeadChangesByValue,
-            player1To2ActionRatio: this.player1To2ActionRatio,
+            playerActionRatio: this.playerActionRatio,
             winningPlayerRemainingHP: this.winningPlayerRemainingHP,
             directorStatChangeAverageAbsolute: this.directorStatChangeAverageAbsolute,
             directorStatChangeAverageBuff: this.directorStatChangeAverageBuff,
