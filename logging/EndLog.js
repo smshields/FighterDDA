@@ -30,9 +30,15 @@ class EndLog {
         this.directorStatChangeAverageBuff = -1;
         this.directorStatChangeAverageNerf = -1;
         this.winningPlayerLowestCharacterHP = -1;
+
+        //TODO: Unsure on categorization
+        this.actionBlocks = 0;
+        this.closeDamageCalls = 0;
+        this.criticalHeals = 0;
+        this.absoluteStatDifference = 0;
     }
 
-    postGameProcess(logger) {
+    postGameProcess(logger, players) {
 
         if (!this.timeStepLogs) {
             return false;
@@ -60,13 +66,48 @@ class EndLog {
         this.directorStatChangeAverageBuff = directorChangeData.buffAverage;
         this.directorStatChangeAverageNerf = directorChangeData.nerfAverage;
 
+        //action blocks, damage calls, heals
+        this.actionBlocks = this.gameState.actionBlocks;
+        this.closeDamageCalls = this.gameState.closeDamageCalls;
+        this.criticalHeals = this.gameState.criticalHeals;
+
+        //stat difference
+        this.absoluteStatDifference = this.calculateStatDifference(players[0], players[1]);
+
         return true;
     }
 
+    calculateStatDifference(player1, player2) {
+
+        let player1BaseStatTotal = 0;
+        for (let character of player1.characters) {
+            player1BaseStatTotal += character.baseStats.HP;
+            player1BaseStatTotal += character.baseStats.Attack;
+            player1BaseStatTotal += character.baseStats.MagicAttack;
+            player1BaseStatTotal += character.baseStats.Defense;
+            player1BaseStatTotal += character.baseStats.MagicDefense;
+            player1BaseStatTotal += character.baseStats.Speed;
+            player1BaseStatTotal += character.baseStats.Luck;
+        }
+
+        let player2BaseStatTotal = 0;
+        for (let character of player2.characters) {
+            player2BaseStatTotal += character.baseStats.HP;
+            player2BaseStatTotal += character.baseStats.Attack;
+            player2BaseStatTotal += character.baseStats.MagicAttack;
+            player2BaseStatTotal += character.baseStats.Defense;
+            player2BaseStatTotal += character.baseStats.MagicDefense;
+            player2BaseStatTotal += character.baseStats.Speed;
+            player2BaseStatTotal += character.baseStats.Luck;
+        }
+
+        return Math.abs(player1BaseStatTotal - player2BaseStatTotal);
+    }
+
     calculateWinningPlayerLowestCharacterHP() {
-        if(this.loser === 1){
+        if (this.loser === 1) {
             return this.gameState.getLowestHPCharacter(2);
-        } else if(this.loser === 2){
+        } else if (this.loser === 2) {
             return this.gameState.getLowestHPCharacter(1);
         } else {
             return this.gameState.getLowestHPCharacter(0);
@@ -118,10 +159,10 @@ class EndLog {
 
     calculatePlayerActionRatio() {
         let ratio = this.gameState.player1Data.actions / this.gameState.player2Data.actions;
-        if(ratio < 1){
+        if (ratio < 1) {
             ratio = 1 / ratio;
         }
-        return ratio; 
+        return ratio;
     }
 
     calculateNumLeadChanges() {
@@ -216,7 +257,11 @@ class EndLog {
             directorStatChangeAverageAbsolute: this.directorStatChangeAverageAbsolute,
             directorStatChangeAverageBuff: this.directorStatChangeAverageBuff,
             directorStatChangeAverageNerf: this.directorStatChangeAverageNerf,
-            winningPlayerLowestCharacterHP: this.winningPlayerLowestCharacterHP
+            winningPlayerLowestCharacterHP: this.winningPlayerLowestCharacterHP,
+            actionBlocks: this.actionBlocks,
+            closeDamageCalls: this.closeDamageCalls,
+            criticalHeals: this.criticalHeals,
+            absoluteStatDifference: this.absoluteStatDifference
         };
     }
 }
