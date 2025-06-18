@@ -29,11 +29,16 @@ const EndLog = require('../logging/EndLog');
 class Game {
     constructor(players, aiDirector, directorActionInterval = Constants.DIRECTOR_ACTION_INTERVAL, actionExecutionInterval = Constants.ACTION_EXECUTION_INTERVAL, seed) {
 
+        //Set up seeded RNG if specified.
         if (seed) {
             Constants.RNG_SEED = seed;
         } else {
             Constants.generateNewSeed();
         }
+
+        RNG.setSeedFromConstants();
+
+
 
 
 
@@ -120,18 +125,20 @@ class Game {
                             "player": player,
                             "character": character
                         });
-                        character.resetActionBar();
                     }
                 }
             });
         });
 
+        //execute based on filled action bar
+
         //execute based on fastest speed
-        actingCharacters.sort((a, b) => this.compareSpeed(a.character, b.character));
+        actingCharacters.sort((a, b) => this.compareActionMeter(a.character, b.character));
 
         //add actions to queue
         for (let actingCharacter of actingCharacters) {
             this.enqueueAction(actingCharacter.player, actingCharacter.character);
+            actingCharacter.character.resetActionBar();
         }
 
         //before executing actions, save previous turn's number of actions
@@ -154,6 +161,13 @@ class Game {
                     this.gameState.player2Data.currentHP,
                     this.gameState.currentHP
                 ]); //update based on array
+
+                let losingPlayer = this.checkGameOver(); //if an action results in a loss, end game
+                if (losingPlayer) {
+                    this.updateGameState();
+                    this.updateTimeStepLog(timeStepLog);
+                    return losingPlayer;
+                }
             }
         }
 
@@ -172,12 +186,24 @@ class Game {
                 for (let action of directorActions) {
                     let directorActionLog = this.executeAIDirectorAction(action);
                     timeStepLog.directorActions.push(directorActionLog); //Handle director actions, push details to log
+
+                    let losingPlayer = this.checkGameOver(); //if a director action results in a loss, end game
+                    if (losingPlayer) {
+                        this.updateGameState();
+                        this.updateTimeStepLog(timeStepLog);
+                        return losingPlayer;
+                    }
                 }
             }
         }
 
-        //update gamestate after all actions have resolved
-        //TODO: Got to be a better way to do this...
+        this.updateGameState();
+        this.updateTimeStepLog(timeStepLog);
+
+        return null; //if we haven't seen an action result in a loss, return null.
+    }
+
+    updateGameState() {
         if (this.players[0].playerNumber === 1) {
             this.gameState.updatePlayer1Data(this.players[0]);
             this.gameState.updatePlayer2Data(this.players[1]);
@@ -187,12 +213,31 @@ class Game {
         }
 
         this.gameState.updateTotalHP(this.players);
+    }
 
+    updateTimeStepLog(timeStepLog) {
         //update time step log from gamestate
         timeStepLog.updateLogFromGameState(this.gameState);
 
         // Push the time step log to the main log array
         this.logger.logTimeStep(timeStepLog);
+    }
+
+    /**shows which character has a larger action meter. If one is larger, it is ranked 
+     * higher than other characters. If tied with another character, speed stats are 
+     * used to tie break. If speed stats are tied, one character is randomly returned.
+     * 
+     * */
+
+    compareActionMeter(characterA, characterB) {
+        let comparator = characterB.actionBar - characterA.actionBar;
+        if (comparator > 0) {
+            return 1;
+        } else if (comparator < 0) {
+            return -1;
+        } else { //if there is an action bar tie, resort to speed comparator
+            return this.compareSpeed(characterA, characterB);
+        }
     }
 
     /** Shows which character has a faster speed. If they are tied, one is randomly selected. */
@@ -212,10 +257,20 @@ class Game {
     }
 
     checkGameOver() {
+
+        let drawCheck = 0;
+        let losingPlayer = null;
         for (let player of this.players) {
             if (player.characters.every(c => !c.isAlive())) {
+                drawCheck++;
+                losingPlayer = player.playerNumber;
                 return player.playerNumber; // Return the player number who lost
             }
+        }
+
+        //both players have died concurrently - very rare case when director over-acts
+        if (drawCheck == 2) {
+            return -1;
         }
 
         //game lasted more than 30 minutes, end and report
@@ -224,8 +279,7 @@ class Game {
             return -1;
         }
 
-
-        return null; // No player has lost yet
+        return losingPlayer; //Null if no one has lost yet, otherwise player number
     }
 
     /**
@@ -389,7 +443,7 @@ class Game {
             for (let target of action.characterTargets) {
                 for (let stat of action.stats) {
                     let statChange = action.statChange;
-                    if(action.type === 'nerf'){
+                    if (action.type === 'nerf') {
                         statChange = -1 * statChange;
                     }
 
@@ -452,8 +506,7 @@ class Game {
     runSimulation(maxSteps = Infinity) {
         let loser = null;
         while (!loser && this.gameState.timeStep < maxSteps) {
-            this.processTimeStep();
-            loser = this.checkGameOver();
+            loser = this.processTimeStep();
         }
 
         //update end of game log

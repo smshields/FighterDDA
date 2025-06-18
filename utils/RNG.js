@@ -3,10 +3,13 @@ Constants = require('./Constants');
 // Random Number Generator with a seed (for reproducibility)
 class RNG {
 
+    static seed = 0;
+    static state = 0;
 
-    
-    static seed = Constants.RNG_SEED;
-    static state = Constants.RNG_SEED;
+    static setSeedFromConstants(){
+        this.seed = Constants.RNG_SEED;
+        this.state = Constants.RNG_SEED;
+    }
     
 
     static next() {

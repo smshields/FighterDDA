@@ -10,7 +10,7 @@
  * */
 class Constants {
 
-    static RNG_SEED = 123; //Seed for reproduction
+    static RNG_SEED = 0; //Seed for reproduction
     static OUTPUT_DIRECTORY = './output';
     static MAX_GAME_LENGTH_SECONDS = 1800; //Approximation, 1 timeStep is 1 second, 1 Action is 6 seconds, players take actions concurrently so divide by 2
 
