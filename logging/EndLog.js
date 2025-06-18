@@ -33,6 +33,8 @@ class EndLog {
 
         //TODO: Unsure on categorization
         this.actionBlocks = 0;
+        this.closeDamageCalls = 0;
+        this.criticalHeals = 0;
     }
 
     postGameProcess(logger) {
@@ -63,8 +65,10 @@ class EndLog {
         this.directorStatChangeAverageBuff = directorChangeData.buffAverage;
         this.directorStatChangeAverageNerf = directorChangeData.nerfAverage;
 
-        //action blocks
+        //action blocks, damage calls, heals
         this.actionBlocks = this.gameState.actionBlocks;
+        this.closeDamageCalls = this.gameState.closeDamageCalls;
+        this.criticalHeals = this.gameState.criticalHeals;
 
         return true;
     }
@@ -223,7 +227,9 @@ class EndLog {
             directorStatChangeAverageBuff: this.directorStatChangeAverageBuff,
             directorStatChangeAverageNerf: this.directorStatChangeAverageNerf,
             winningPlayerLowestCharacterHP: this.winningPlayerLowestCharacterHP,
-            actionBlocks: this.actionBlocks
+            actionBlocks: this.actionBlocks,
+            closeDamageCalls: this.closeDamageCalls,
+            criticalHeals: this.criticalHeals
         };
     }
 }

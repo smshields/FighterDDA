@@ -39,9 +39,6 @@ class Game {
         RNG.setSeedFromConstants();
 
 
-
-
-
         this.players = players;
         this.aiDirector = aiDirector;
 

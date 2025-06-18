@@ -39,6 +39,17 @@ class Character {
 
     }
 
+    isLowHealth(){
+        //character must be alive
+        if(this.stats.currentHP > 0){
+            if(this.stats.currentHP/this.baseStats.HP <= Constants.LOW_HEALTH_THRESHOLD){
+                return true;
+            } 
+        }
+
+        return false;
+    }
+
     isAlive() {
         return this.stats.currentHP > 0;
     }
@@ -74,6 +85,9 @@ class Character {
 
     takeDamage(damage) {
         this.stats.currentHP = Math.max(0, this.stats.currentHP - damage);
+        if(this.isLowHealth()){
+            this.gameState.closeDamageCalls++;
+        }
     }
 
     dealAttackDamage(target, scalar) {
@@ -185,6 +199,10 @@ class Character {
 
 
         heal = Utils.round(heal);
+
+        if(this.isLowHealth()){
+            this.gameState.criticalHeals++;
+        }
 
         target.stats.currentHP += heal;
 

@@ -45,7 +45,7 @@ class Constants {
     static PLAYER_2_AI = 'optimal'; //determines AI type of player 2 - optimal, random, suboptimal
     static PLAYER_1_AI_RANDOMNESS = true; //true = weighted random, false = always top of array
     static PLAYER_2_AI_RANDOMNESS = true;
-    static LOW_HEALTH_THRESHOLD = 0.3; //determines when we consider a character to be at low health
+    static LOW_HEALTH_THRESHOLD = 0.25; //determines when we consider a character to be at low health
     static RANDOM_PLAYER_AI_MODE = 'random';
     static GRIEFER_PLAYER_AI_MODE = 'griefer';
     static OPTIMAL_PLAYER_AI_MODE = 'optimal';

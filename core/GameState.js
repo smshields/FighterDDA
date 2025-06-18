@@ -43,6 +43,11 @@ class GameState {
         //because a character queued to act died.
         this.actionBlocks = 0;
 
+        //represents times a character has taken damage while already in critical HP range
+        this.closeDamageCalls = 0;
+        //represents times a character recieves a heal while in critical range
+        this.criticalHeals = 0;
+
 
         //TODO: Refactor this into a "players" array with "characters" arrays that are more easily iterable.
         //Making the code very bloated in other places.
