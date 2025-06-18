@@ -106,10 +106,18 @@ class Game {
     processTimeStep() {
         this.gameState.timeStep++;
 
+
+        //Check for action blocks by looking at queue length pre/post filter
+        let actionBlockCount = this.gameState.actionQueue.length;
+
         // Remove dead characters from action queue - but only for character actions
         this.gameState.actionQueue = this.gameState.actionQueue.filter(action => {
-            return action.character ? action.character.isAlive() : true; // Keep AI Director actions
+            return action.actor.isAlive() || action.actor === "AI Director"; // Keep AI Director actions
         });
+
+        //if new length is shorter, we'll increment the gameState's action blocks property
+        actionBlockCount = actionBlockCount - this.gameState.actionQueue.length;
+        this.gameState.actionBlocks += actionBlockCount;
 
         //init log for this time step
         let timeStepLog = new TimeStepLog(this.gameState.timeStep);

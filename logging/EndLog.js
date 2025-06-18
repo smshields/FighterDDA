@@ -30,6 +30,9 @@ class EndLog {
         this.directorStatChangeAverageBuff = -1;
         this.directorStatChangeAverageNerf = -1;
         this.winningPlayerLowestCharacterHP = -1;
+
+        //TODO: Unsure on categorization
+        this.actionBlocks = 0;
     }
 
     postGameProcess(logger) {
@@ -59,6 +62,9 @@ class EndLog {
         this.directorStatChangeAverageAbsolute = directorChangeData.totalAverage;
         this.directorStatChangeAverageBuff = directorChangeData.buffAverage;
         this.directorStatChangeAverageNerf = directorChangeData.nerfAverage;
+
+        //action blocks
+        this.actionBlocks = this.gameState.actionBlocks;
 
         return true;
     }
@@ -216,7 +222,8 @@ class EndLog {
             directorStatChangeAverageAbsolute: this.directorStatChangeAverageAbsolute,
             directorStatChangeAverageBuff: this.directorStatChangeAverageBuff,
             directorStatChangeAverageNerf: this.directorStatChangeAverageNerf,
-            winningPlayerLowestCharacterHP: this.winningPlayerLowestCharacterHP
+            winningPlayerLowestCharacterHP: this.winningPlayerLowestCharacterHP,
+            actionBlocks: this.actionBlocks
         };
     }
 }
