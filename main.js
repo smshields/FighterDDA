@@ -92,7 +92,7 @@ function runRepeatedSimulations(
         }
         delete game;
 
-        currentSeed++;
+        currentSeed+=1;
     }
 
     //TODO: Global logging to file capabilities
@@ -132,4 +132,4 @@ agent2.characters.forEach(character => character.player = agent2);
 //game.runSimulation();
 
 // Run repeated simulations
-runRepeatedSimulations(100, 1, 20, 3);
+runRepeatedSimulations(100, 123, 20, 3);
