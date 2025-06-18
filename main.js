@@ -132,4 +132,4 @@ agent2.characters.forEach(character => character.player = agent2);
 //game.runSimulation();
 
 // Run repeated simulations
-runRepeatedSimulations(10, 1, 20, 3);
+runRepeatedSimulations(100, 1, 20, 3);

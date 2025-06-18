@@ -154,6 +154,13 @@ class Game {
                     this.gameState.player2Data.currentHP,
                     this.gameState.currentHP
                 ]); //update based on array
+
+                let losingPlayer = this.checkGameOver(); //if an action results in a loss, end game
+                if (losingPlayer) {
+                    this.updateGameState();
+                    this.updateTimeStepLog(timeStepLog);
+                    return losingPlayer;
+                }
             }
         }
 
@@ -172,12 +179,24 @@ class Game {
                 for (let action of directorActions) {
                     let directorActionLog = this.executeAIDirectorAction(action);
                     timeStepLog.directorActions.push(directorActionLog); //Handle director actions, push details to log
+
+                    let losingPlayer = this.checkGameOver(); //if a director action results in a loss, end game
+                    if (losingPlayer) {
+                        this.updateGameState();
+                        this.updateTimeStepLog(timeStepLog);
+                        return losingPlayer;
+                    }
                 }
             }
         }
 
-        //update gamestate after all actions have resolved
-        //TODO: Got to be a better way to do this...
+        this.updateGameState();
+        this.updateTimeStepLog(timeStepLog);
+
+        return null; //if we haven't seen an action result in a loss, return null.
+    }
+
+    updateGameState() {
         if (this.players[0].playerNumber === 1) {
             this.gameState.updatePlayer1Data(this.players[0]);
             this.gameState.updatePlayer2Data(this.players[1]);
@@ -187,7 +206,9 @@ class Game {
         }
 
         this.gameState.updateTotalHP(this.players);
+    }
 
+    updateTimeStepLog(timeStepLog) {
         //update time step log from gamestate
         timeStepLog.updateLogFromGameState(this.gameState);
 
@@ -212,10 +233,20 @@ class Game {
     }
 
     checkGameOver() {
+
+        let drawCheck = 0;
+        let losingPlayer = null;
         for (let player of this.players) {
             if (player.characters.every(c => !c.isAlive())) {
+                drawCheck++;
+                losingPlayer = player.playerNumber;
                 return player.playerNumber; // Return the player number who lost
             }
+        }
+
+        //both players have died concurrently - very rare case when director over-acts
+        if (drawCheck == 2) {
+            return -1;
         }
 
         //game lasted more than 30 minutes, end and report
@@ -224,8 +255,7 @@ class Game {
             return -1;
         }
 
-
-        return null; // No player has lost yet
+        return losingPlayer; //Null if no one has lost yet, otherwise player number
     }
 
     /**
@@ -389,7 +419,7 @@ class Game {
             for (let target of action.characterTargets) {
                 for (let stat of action.stats) {
                     let statChange = action.statChange;
-                    if(action.type === 'nerf'){
+                    if (action.type === 'nerf') {
                         statChange = -1 * statChange;
                     }
 
@@ -452,8 +482,7 @@ class Game {
     runSimulation(maxSteps = Infinity) {
         let loser = null;
         while (!loser && this.gameState.timeStep < maxSteps) {
-            this.processTimeStep();
-            loser = this.checkGameOver();
+            loser = this.processTimeStep();
         }
 
         //update end of game log
