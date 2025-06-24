@@ -36,7 +36,7 @@ class Constants {
     static CLAMP_STAT_CHANGE = false; //allows us to clamp how much something is buffed/nerfed
     static MAX_BUFF_AMOUNT = 30; //clamps maximum buff
     static MAX_NERF_AMOUNT = 30; //clamps minimum buff
-    static DIFFICULTY_BALANCE_MODE = 'environment'; //player = adjust player character stats for difficulty condition, environment = adjust scalars
+    static DIFFICULTY_BALANCE_MODE = 'player'; //player = adjust player character stats for difficulty condition, environment = adjust scalars
     static HP_DAMAGE_ADJUSTMENT_SCALAR = .5;
 
     //Player AI Configuration
