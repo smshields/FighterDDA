@@ -548,12 +548,12 @@ class Game {
                 target.stats[stat] = Math.min(Constants.MAGE_MAGIC_ATTACK_MAX, Math.max(Constants.MAGE_MAGIC_ATTACK_MIN, target.stats[stat]));
                 break;
             case 'Defense':
-                target.baseStats[stat] += change;
+                target.currentBaseStats[stat] += change;
                 target.stats[stat] += change;
                 target.stats[stat] = Math.min(Constants.MAGE_DEFENSE_MAX, Math.max(Constants.MAGE_DEFENSE_MIN, target.stats[stat]));
                 break;
             case 'MagicDefense':
-                target.baseStats[stat] += change;
+                target.currentBaseStats[stat] += change;
                 target.stats[stat] += change;
                 target.stats[stat] = Math.min(Constants.MAGE_MAGIC_DEFENSE_MAX, Math.max(Constants.MAGE_MAGIC_DEFENSE_MIN, target.stats[stat]));
                 break;
@@ -602,12 +602,12 @@ class Game {
                 target.stats[stat] = Math.min(Constants.WARRIOR_MAGIC_ATTACK_MAX, Math.max(Constants.WARRIOR_MAGIC_ATTACK_MIN, target.stats[stat]));
                 break;
             case 'Defense':
-                target.baseStats[stat] += change;
+                target.currentBaseStats[stat] += change;
                 target.stats[stat] += change;
                 target.stats[stat] = Math.min(Constants.WARRIOR_DEFENSE_MAX, Math.max(Constants.WARRIOR_DEFENSE_MIN, target.stats[stat]));
                 break;
             case 'MagicDefense':
-                target.baseStats[stat] += change;
+                target.currentBaseStats[stat] += change;
                 target.stats[stat] += change;
                 target.stats[stat] = Math.min(Constants.WARRIOR_MAGIC_DEFENSE_MAX, Math.max(Constants.WARRIOR_MAGIC_DEFENSE_MIN, target.stats[stat]));
                 break;
@@ -636,12 +636,12 @@ class Game {
                 target.stats[stat] = Math.min(Constants.PRIEST_MAGIC_ATTACK_MAX, Math.max(Constants.PRIEST_MAGIC_ATTACK_MIN, target.stats[stat]));
                 break;
             case 'Defense':
-                target.baseStats[stat] += change;
+                target.currentBaseStats[stat] += change;
                 target.stats[stat] += change;
                 target.stats[stat] = Math.min(Constants.PRIEST_DEFENSE_MAX, Math.max(Constants.PRIEST_DEFENSE_MIN, target.stats[stat]));
                 break;
             case 'MagicDefense':
-                target.baseStats[stat] += change;
+                target.currentBaseStats[stat] += change;
                 target.stats[stat] += change;
                 target.stats[stat] = Math.min(Constants.PRIEST_MAGIC_DEFENSE_MAX, Math.max(Constants.PRIEST_MAGIC_DEFENSE_MIN, target.stats[stat]));
                 break;
@@ -671,12 +671,12 @@ class Game {
                 target.stats[stat] = Math.min(Constants.ROGUE_MAGIC_ATTACK_MAX, Math.max(Constants.ROGUE_MAGIC_ATTACK_MIN, target.stats[stat]));
                 break;
             case 'Defense':
-                target.baseStats[stat] += change;
+                target.currentBaseStats[stat] += change;
                 target.stats[stat] += change;
                 target.stats[stat] = Math.min(Constants.ROGUE_DEFENSE_MAX, Math.max(Constants.ROGUE_DEFENSE_MIN, target.stats[stat]));
                 break;
             case 'MagicDefense':
-                target.baseStats[stat] += change;
+                target.currentBaseStats[stat] += change;
                 target.stats[stat] += change;
                 target.stats[stat] = Math.min(Constants.ROGUE_MAGIC_DEFENSE_MAX, Math.max(Constants.ROGUE_MAGIC_DEFENSE_MIN, target.stats[stat]));
                 break;

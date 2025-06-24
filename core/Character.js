@@ -37,6 +37,11 @@ class Character {
         this.baseStats = {...stats
         }; // Store the base stats with fuzziness applied
 
+        this.currentBaseStats = {
+            Defense: this.baseStats.Defense,
+            MagicDefense: this.baseStats.MagicDefense 
+        };
+
     }
 
     isLowHealth(){
@@ -64,8 +69,8 @@ class Character {
 
     resetDefense() {
         if (this.defenseBoosted) {
-            this.stats.Defense = this.baseStats.Defense;
-            this.stats.MagicDefense = this.baseStats.MagicDefense;
+            this.stats.Defense = this.currentBaseStats.Defense;
+            this.stats.MagicDefense = this.currentBaseStats.MagicDefense;
             this.defenseBoosted = false;
         }
     }
