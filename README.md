@@ -12,11 +12,14 @@ Bash is recommended (E.G. Linux, Mac, or WSL).
 4. Run "npm install" to install all dependencies.
 5. Use "node main.js" to run a simulation.
 
+To change system modes, you can change constants in the Constants.js - control modes are commented by each setting. you can also change settings in main.js in the simulation initialization.
+
+All visualization tooling can be found in /tooling. The inspector can be pointed to the output JSON of a simulation run to inspect an individual game.
+
 # Usage Notes
 
-1. JSON logs detailing each simulation will be saved to the "output" folder. The folder name is the timestamp. Each sub-folder indicates what game in the simulation it refers to. The name of the file is the seed used for generation. NOTE: I've gotten the structure correct, but I'm still seeing bad data being output - I'll update when I fix this issue.
-2. Major constants that determine simulation behavior can be found in "utils/Constants.js". Please feel free to change these as desired to see what differences you see (this may not be effective for data analysis until I fix logging output)
-3. The 'Inclusion' mode is currently not working - once I fix logging issues I will tackle this next.
+1. JSON logs detailing each simulation will be saved to the "output" folder. The folder name is the timestamp. Each sub-folder indicates what game in the simulation it refers to. The name of the file is the seed used for generation.
+2. Major constants that determine simulation behavior can be found in "utils/Constants.js". Please feel free to change these as desired to see what differences you see.
 
 # Feature Requests/Bug Fixes
 
