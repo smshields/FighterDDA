@@ -19,13 +19,15 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import matplotlib.patches as mpatches
 
-#fight_type_metrics = ["totalTimeSteps", "totalActions", "numLeadChangesByRatio", "totalDamageOut", "winningPlayerRemainingHP", "player1To2ActionRatio" ]
+
+#Visualisation parameters
 fight_type_metrics = ["winningPlayerRemainingHP", "numLeadChangesByRatio", "totalDamageOut"]
-
-#fight_descriptor_metrics = ["winningPlayerRemainingHP", "numDirectorChanges", "directorStatChangeAverageAbsolute", "player1To2ActionRatio"]
 fight_descriptor_metrics = ["totalTimeSteps", "absoluteStatDifference"]
-
 metrics_to_normalize_by_timesteps = ["numLeadChangesByRatio", "totalDamageOut", "numDirectorChanges"]
+runs_folder = "output"
+out_folder_name = "Vis_Output_Name"
+k = 3
+
 
 #metrics_to_normalize_by_timesteps = []
 
@@ -216,7 +218,7 @@ def vis_dbscan_Kdistance(data, out_path, title):
     plt.savefig(f"{out_path}/{title}.png",dpi=300)
     plt.close()
 
-def generate_scatter(data_xy, point_labels, axis_labels_xy, title, out_path, point_class = [], add_convex_hull = False, add_point_labels = True):
+def generate_scatter(data_xy, point_labels, axis_labels_xy, title, out_path, point_class = [], add_convex_hull = False, add_point_labels = True, force_zero = False):
     if(len(point_class)>0):
         unique_labels = list(set(point_class))
         color_map = {label: plt.cm.tab10(i) for i, label in enumerate(unique_labels)}
@@ -240,6 +242,10 @@ def generate_scatter(data_xy, point_labels, axis_labels_xy, title, out_path, poi
         legend_patches = [mpatches.Patch(color=color_map[label], label=label) for label in unique_labels]
         plt.legend(handles=legend_patches, title="Categories")
 
+    if (force_zero):
+        plt.xlim(left=0)
+        plt.ylim(bottom=0)
+
     plt.xlabel(axis_labels_xy[0])
     plt.ylabel(axis_labels_xy[1])
     plt.title(title)
@@ -262,7 +268,7 @@ def generate_labeled_era(fights, metrics, cluster_designations, outpath, filelab
             fight_labels.append(fight['fight_name'])
 
         metric_tuples = np.array(metric_tuples)
-        generate_scatter(metric_tuples, fight_labels, [f"{pair[0]}",f"{pair[1]}"],f"{pair[0]} vs {pair[1]}-{filelabel} Scatter", outpath, cluster_designations, True, False)
+        generate_scatter(metric_tuples, fight_labels, [f"{pair[0]}",f"{pair[1]}"],f"{pair[0]} vs {pair[1]}-{filelabel} Scatter", outpath, cluster_designations, True, False, force_zero=True)
         
         generate_hexplot(metric_tuples,[f"{pair[0]}",f"{pair[1]}"], f"{pair[0]} vs {pair[1]}-{filelabel} Hexplot", outpath)
 
@@ -287,6 +293,9 @@ def generate_hexplot(data_xy, axis_labels_xy, title, out_path):
     plt.xlabel(axis_labels_xy[0])
     plt.ylabel(axis_labels_xy[1])
     plt.title(title)
+
+    plt.xlim(left=0)
+    plt.ylim(bottom=0)
 
     # Show the plot
     #plt.show() 
@@ -346,7 +355,7 @@ def get_all_data_kmeans(outfolder_name=""):
 
     os.makedirs(visuals_output_dir, exist_ok=True)
 
-    folders, all_fights = extract_all_data("output")
+    folders, all_fights = extract_all_data(runs_folder)
 
     for key, val in folders.items():
         print(f"{key} : {val}")
@@ -362,12 +371,12 @@ def get_all_data_kmeans(outfolder_name=""):
     type_matrix = get_datamatrix(all_fights, True)
 
 
-    pca_reduced_data, exp_var = apply_pca(type_matrix, 0.8)
+    pca_reduced_data, exp_var = apply_pca(type_matrix, 2)
     print("Explained variance ratio:", exp_var)
     generate_scatter(pca_reduced_data, fight_names, [f"PCA 1: {exp_var[0]}",f"PCA 2: {exp_var[1]}"],"PCA Vis-Source Colouring", visuals_output_dir, sources, True, False)
 
     vis_kmeans_elbow(pca_reduced_data, visuals_output_dir, "K-Means Elbow")
-    kmeans_clusters = apply_kmeans(pca_reduced_data, 3)
+    kmeans_clusters = apply_kmeans(pca_reduced_data, k)
 
     generate_scatter(pca_reduced_data, fight_names, [f"TSNE 1",f"TSNE 2"],"PCA Vis-KM Colouring", visuals_output_dir, kmeans_clusters, True, False)
 
@@ -378,77 +387,9 @@ def get_all_data_kmeans(outfolder_name=""):
     get_metric_ranges_for_clusters(all_fights, fight_type_metrics+fight_descriptor_metrics, fight_names, kmeans_clusters, f"{visuals_output_dir}/PCAVer-km_cluster_metric_range")
 
 def main():
-    get_all_data_kmeans("V3 Tidied Output")
+    get_all_data_kmeans(out_folder_name)
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-#visuals_output_dir = f"tools/visuals/{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-
-#os.makedirs(visuals_output_dir, exist_ok=True)
-
-#folders, all_fights = extract_all_data("output")
-
-#for key, val in folders.items():
-    #print(f"{key} : {val}")
-
-
-#fight_names = []
-#sources = []
-#for fight in all_fights:
-    #fight_names.append(fight['fight_name'])
-    #sources.append(fight['source'])
-
-#type_matrix = get_datamatrix(all_fights, True)
-
-
-
-#PCA PREPROCESS TESTING
-
-
-#pca_reduced_data, exp_var = apply_pca(type_matrix, 0.8)
-#vis_dbscan_Kdistance(pca_reduced_data, visuals_output_dir, "DBSCAN K Dist")
-#scaled_data, dblabels = apply_dbscan(pca_reduced_data, 0.6, 15)
-
-#vis_kmeans_elbow(pca_reduced_data, visuals_output_dir, "K-Means Elbow")
-#reduced_data, kmeans_clusters = apply_kmeans(pca_reduced_data, 5)
-
-#tsne_data = apply_tsne(pca_reduced_data)
-
-#generate_scatter(tsne_data, fight_names, [f"PCA 1: {exp_var[0]}",f"PCA 2: {exp_var[1]}"],"DBSCANLabels+PCA-Preprocess+TSNE Visualisation", visuals_output_dir, dblabels, True, False)
-#generate_scatter(tsne_data, fight_names, [f"TSNE 1",f"TSNE 2"],"KMEANS+PCA-Preprocess+TSNE Visualisation - DBScan Colouring", visuals_output_dir, kmeans_clusters, True, False)
-#generate_scatter(tsne_data, fight_names, [f"TSNE 1",f"TSNE 2"],"KMEANS+TSNE Visualisation - Folder Colouring", visuals_output_dir, sources, True, False)
-
-
-
-
-#STANDARD RUN
-
-#reduced_data, exp_var = apply_pca(type_matrix)
-#print("Explained variance ratio:", exp_var)
-#generate_scatter(reduced_data, fight_names, [f"PCA 1: {exp_var[0]}",f"PCA 2: {exp_var[1]}"],"PCA Visualisation", visuals_output_dir, sources, True, False)
-
-#tsne_data = apply_tsne(type_matrix)
-#generate_scatter(tsne_data, fight_names, [f"TSNE 1",f"TSNE 2"],"TSNE Visualisation", visuals_output_dir, sources, True, False)
-
-
-#vis_kmeans_elbow(type_matrix, visuals_output_dir, "K-Means Elbow")
-#reduced_data, kmeans_clusters = apply_kmeans(type_matrix, 5)
-
-#generate_scatter(reduced_data, fight_names, [f"PCA 1: {exp_var[0]}",f"PCA 2: {exp_var[1]}"],"KMEANS+PCA Visualisation - KM Colouring", visuals_output_dir, kmeans_clusters, True, False)
-#generate_scatter(reduced_data, fight_names, [f"PCA 1: {exp_var[0]}",f"PCA 2: {exp_var[1]}"],"KMEANS+PCA Visualisation - Folder Colouring", visuals_output_dir, kmeans_clusters, True, False)
-
-#generate_scatter(tsne_data, fight_names, [f"TSNE 1",f"TSNE 2"],"KMEANS+TSNE Visualisation - KM Colouring", visuals_output_dir, kmeans_clusters, True, False)
-#generate_scatter(tsne_data, fight_names, [f"TSNE 1",f"TSNE 2"],"KMEANS+TSNE Visualisation - Folder Colouring", visuals_output_dir, sources, True, False)
-
-#generate_labeled_era(all_fights, fight_descriptor_metrics, sources, visuals_output_dir, 'Source Highlighted')
-#generate_labeled_era(all_fights, fight_descriptor_metrics, kmeans_clusters, visuals_output_dir, 'Cluster Highlighted')
-
-#get_metric_ranges_for_clusters(all_fights, fight_type_metrics, fight_names, sources, f"{visuals_output_dir}/source_metric_range")
-#get_metric_ranges_for_clusters(all_fights, fight_type_metrics, fight_names, kmeans_clusters, f"{visuals_output_dir}/km_cluster_metric_range")
 
 
